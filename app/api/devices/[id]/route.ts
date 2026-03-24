@@ -3,21 +3,23 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const res = await query('SELECT * FROM v_devices_flat WHERE id = $1', [params.id])
+  const { id } = await params
+  const res = await query('SELECT * FROM v_devices_flat WHERE id = $1', [id])
   if (!res.rows[0]) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(res.rows[0])
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const user = session.user as { role: string; id: string }
   if (user.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const { id } = await params
   const body = await req.json()
-  const old = await query('SELECT * FROM v_devices_flat WHERE id = $1', [params.id])
+  const old = await query('SELECT * FROM v_devices_flat WHERE id = $1', [id])
   await query(`
     UPDATE devices SET
       name=$1,brand_id=(SELECT id FROM brands WHERE name=$2),
@@ -38,22 +40,23 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
      body.risk_score||null,body.technical_debt||null,body.remark||null,
      body.cost||null,body.purchase_date||null,
      body.purchase_vendor||null,body.ma_vendor||null,
-     parseInt(user.id),params.id])
+     parseInt(user.id),id])
   await query(
     `INSERT INTO audit_log (device_id, changed_by, field_name, old_value, new_value) VALUES ($1,$2,'updated',$3,$4)`,
-    [params.id, parseInt(user.id), JSON.stringify(old.rows[0]), JSON.stringify(body)])
+    [id, parseInt(user.id), JSON.stringify(old.rows[0]), JSON.stringify(body)])
   return NextResponse.json({ success: true })
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const user = session.user as { role: string; id: string }
   if (user.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const old = await query('SELECT * FROM v_devices_flat WHERE id = $1', [params.id])
+  const { id } = await params
+  const old = await query('SELECT * FROM v_devices_flat WHERE id = $1', [id])
   await query(
     `INSERT INTO audit_log (device_id, changed_by, field_name, old_value, new_value) VALUES ($1,$2,'deleted',$3,NULL)`,
-    [params.id, parseInt(user.id), JSON.stringify(old.rows[0])])
-  await query('DELETE FROM devices WHERE id = $1', [params.id])
+    [id, parseInt(user.id), JSON.stringify(old.rows[0])])
+  await query('DELETE FROM devices WHERE id = $1', [id])
   return NextResponse.json({ success: true })
 }
