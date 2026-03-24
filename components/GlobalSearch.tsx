@@ -12,7 +12,7 @@ export default function GlobalSearch() {
   const [active, setActive] = useState(0)
   const [loading, setLoading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const debounceRef = useRef<NodeJS.Timeout>()
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -40,7 +40,7 @@ export default function GlobalSearch() {
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const v = e.target.value
     setQuery(v)
-    clearTimeout(debounceRef.current)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => search(v), 200)
   }
 
