@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --tu-red: #C8102E;
+  --tu-red-dark: #a00d24;
+  --tu-navy: #1a2744;
+}
+
+body { background: #f8f8f8; color: #1a1a1a; }
+
+.btn-primary { background: var(--tu-red); color: white; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; border: none; cursor: pointer; transition: background 0.15s; }
+.btn-primary:hover { background: var(--tu-red-dark); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary { background: white; color: #374151; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; border: 1px solid #d1d5db; cursor: pointer; }
+.btn-secondary:hover { background: #f9fafb; }
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-danger { background: #fee2e2; color: #991b1b; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; border: 1px solid #fca5a5; cursor: pointer; }
+.btn-danger:hover { background: #fecaca; }
+
+.input { width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; background: white; outline: none; }
+.input:focus { border-color: var(--tu-red); box-shadow: 0 0 0 3px rgba(200,16,46,0.1); }
+
+.select { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; background: white; outline: none; cursor: pointer; }
+.select:focus { border-color: var(--tu-red); }
+
+.card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; padding: 20px 24px; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+.badge-active { background: #dcfce7; color: #166534; }
+.badge-eol { background: #fee2e2; color: #991b1b; }
+.badge-decommed { background: #f3f4f6; color: #4b5563; }
+.badge-spare { background: #fef3c7; color: #92400e; }
+.badge-faulty { background: #ffedd5; color: #9a3412; }
+.badge-admin { background: #ede9fe; color: #5b21b6; }
+.badge-viewer { background: #e0f2fe; color: #075985; }
+.badge-unknown { background: #f3f4f6; color: #6b7280; }
+
+table { width: 100%; border-collapse: collapse; }
+th { background: #f9fafb; padding: 10px 12px; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb; text-transform: uppercase; letter-spacing: 0.04em; }
+td { padding: 11px 12px; font-size: 13px; color: #374151; border-bottom: 1px solid #f3f4f6; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafafa; }

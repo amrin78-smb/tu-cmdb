@@ -1,0 +1,139 @@
+'use client'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+
+type Lookups = {
+  regions: string[]; sites: { site: string; country: string; region: string }[]
+  deviceTypes: string[]; brands: string[]; vendors: string[]
+  lifecycleStatuses: string[]; deviceStatuses: string[]; mgmtProtocols: string[]
+}
+
+type DeviceFormProps = { initialData?: Record<string, any>; deviceId?: string }
+
+export default function DeviceForm({ initialData, deviceId }: DeviceFormProps) {
+  const router = useRouter()
+  const [lookups, setLookups] = useState<Lookups | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [form, setForm] = useState({ name: '', brand: '', model: '', serial_number: '', device_type: '', ip_address: '', mgmt_protocol: '', mgmt_url: '', site: '', location_detail: '', lifecycle_status: 'Unknown', device_status: 'Active', risk_score: '', technical_debt: '', remark: '', cost: '', purchase_date: '', purchase_vendor: '', ma_vendor: '', ...initialData })
+
+  useEffect(() => { fetch('/api/lookup').then(r => r.json()).then(setLookups) }, [])
+
+  function set(field: string, value: string) { setForm(f => ({ ...f, [field]: value })) }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!form.name || !form.device_type || !form.site) { setError('Name, device type and site are required'); return }
+    setSaving(true); setError('')
+    const res = await fetch(deviceId ? `/api/devices/${deviceId}` : '/api/devices', {
+      method: deviceId ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form)
+    })
+    if (res.ok) { router.push('/devices'); router.refresh() }
+    else { const data = await res.json(); setError(data.error || 'Failed to save'); setSaving(false) }
+  }
+
+  if (!lookups) return <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Loading...</div>
+
+  const Field = ({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) => (
+    <div>
+      <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: '#374151', marginBottom: '5px' }}>
+        {label}{required && <span style={{ color: '#C8102E' }}> *</span>}
+      </label>
+      {children}
+    </div>
+  )
+
+  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    <div className="card" style={{ marginBottom: '16px' }}>
+      <h2 style={{ fontSize: '15px', fontWeight: '600', color: '#111827', marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid #f3f4f6' }}>{title}</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>{children}</div>
+    </div>
+  )
+
+  return (
+    <div style={{ padding: '24px 28px', maxWidth: '900px' }}>
+      <div style={{ marginBottom: '24px' }}>
+        <button onClick={() => router.back()} style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: '13px', cursor: 'pointer', padding: 0, marginBottom: '12px' }}>← Back</button>
+        <h1 style={{ fontSize: '22px', fontWeight: '700', color: '#111827', margin: 0 }}>{deviceId ? 'Edit device' : 'Add new device'}</h1>
+      </div>
+      <form onSubmit={handleSubmit}>
+        <Section title="Device identity">
+          <Field label="Device name" required><input className="input" value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. SW-CORE-BKK-01" /></Field>
+          <Field label="Device type" required>
+            <select className="input select" value={form.device_type} onChange={e => set('device_type', e.target.value)}>
+              <option value="">Select type</option>
+              {lookups.deviceTypes.map(t => <option key={t}>{t}</option>)}
+            </select>
+          </Field>
+          <Field label="Brand">
+            <select className="input select" value={form.brand} onChange={e => set('brand', e.target.value)}>
+              <option value="">Select brand</option>
+              {lookups.brands.map(b => <option key={b}>{b}</option>)}
+            </select>
+          </Field>
+          <Field label="Model"><input className="input" value={form.model} onChange={e => set('model', e.target.value)} placeholder="e.g. Catalyst 9300" /></Field>
+          <Field label="Serial number"><input className="input" value={form.serial_number} onChange={e => set('serial_number', e.target.value)} /></Field>
+        </Section>
+        <Section title="Network">
+          <Field label="IP address"><input className="input" value={form.ip_address} onChange={e => set('ip_address', e.target.value)} placeholder="e.g. 10.1.1.1" /></Field>
+          <Field label="Management protocol">
+            <select className="input select" value={form.mgmt_protocol} onChange={e => set('mgmt_protocol', e.target.value)}>
+              <option value="">Select protocol</option>
+              {lookups.mgmtProtocols.map(p => <option key={p}>{p}</option>)}
+            </select>
+          </Field>
+          <Field label="Management URL"><input className="input" value={form.mgmt_url} onChange={e => set('mgmt_url', e.target.value)} placeholder="https://..." /></Field>
+        </Section>
+        <Section title="Location">
+          <Field label="Site" required>
+            <select className="input select" value={form.site} onChange={e => set('site', e.target.value)}>
+              <option value="">Select site</option>
+              {lookups.sites.map(s => <option key={s.site} value={s.site}>{s.site} — {s.country}</option>)}
+            </select>
+          </Field>
+          <Field label="Location detail"><input className="input" value={form.location_detail} onChange={e => set('location_detail', e.target.value)} placeholder="e.g. Rack B2, Server room" /></Field>
+        </Section>
+        <Section title="Lifecycle & status">
+          <Field label="Lifecycle status">
+            <select className="input select" value={form.lifecycle_status} onChange={e => set('lifecycle_status', e.target.value)}>
+              {lookups.lifecycleStatuses.map(s => <option key={s}>{s}</option>)}
+            </select>
+          </Field>
+          <Field label="Device status">
+            <select className="input select" value={form.device_status} onChange={e => set('device_status', e.target.value)}>
+              {lookups.deviceStatuses.map(s => <option key={s}>{s}</option>)}
+            </select>
+          </Field>
+          <Field label="Risk score"><input className="input" type="number" value={form.risk_score} onChange={e => set('risk_score', e.target.value)} placeholder="0–100" min="0" max="100" /></Field>
+          <Field label="Technical debt"><input className="input" value={form.technical_debt} onChange={e => set('technical_debt', e.target.value)} /></Field>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <Field label="Remark"><textarea className="input" value={form.remark} onChange={e => set('remark', e.target.value)} rows={3} style={{ resize: 'vertical' }} /></Field>
+          </div>
+        </Section>
+        <Section title="Procurement">
+          <Field label="Cost (USD)"><input className="input" type="number" value={form.cost} onChange={e => set('cost', e.target.value)} placeholder="0.00" /></Field>
+          <Field label="Purchase date"><input className="input" type="date" value={form.purchase_date} onChange={e => set('purchase_date', e.target.value)} /></Field>
+          <Field label="Purchase vendor">
+            <select className="input select" value={form.purchase_vendor} onChange={e => set('purchase_vendor', e.target.value)}>
+              <option value="">Select vendor</option>
+              {lookups.vendors.map(v => <option key={v}>{v}</option>)}
+            </select>
+          </Field>
+          <Field label="MA vendor">
+            <select className="input select" value={form.ma_vendor} onChange={e => set('ma_vendor', e.target.value)}>
+              <option value="">Select vendor</option>
+              {lookups.vendors.map(v => <option key={v}>{v}</option>)}
+            </select>
+          </Field>
+        </Section>
+        {error && <div style={{ background: '#fee2e2', color: '#991b1b', padding: '12px 16px', borderRadius: '8px', fontSize: '14px', marginBottom: '16px' }}>{error}</div>}
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="btn-primary" type="submit" disabled={saving}>{saving ? 'Saving...' : deviceId ? 'Save changes' : 'Add device'}</button>
+          <button className="btn-secondary" type="button" onClick={() => router.back()}>Cancel</button>
+        </div>
+      </form>
+    </div>
+  )
+}
