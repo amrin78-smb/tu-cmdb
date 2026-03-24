@@ -36,6 +36,15 @@ export default function DevicesPage() {
   const [lifecycle, setLifecycle] = useState('')
   const [lookups, setLookups] = useState<{ regions: string[]; sites: {site:string;region:string}[]; deviceTypes: string[] }>({ regions: [], sites: [], deviceTypes: [] })
   const [stats, setStats] = useState({ total: 0, active: 0, eol: 0, decommed: 0 })
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkField, setBulkField] = useState('device_status')
+  const [bulkValue, setBulkValue] = useState('')
+  const [bulkLoading, setBulkLoading] = useState(false)
+  const [showImport, setShowImport] = useState(false)
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [importPreview, setImportPreview] = useState<any[]>([])
+  const [importLoading, setImportLoading] = useState(false)
+  const [importResult, setImportResult] = useState('')
 
   useEffect(() => {
     fetch('/api/lookup').then(r => r.json()).then(setLookups)
@@ -51,6 +60,7 @@ export default function DevicesPage() {
 
   const fetchDevices = useCallback(async () => {
     setLoading(true)
+    setSelected(new Set())
     const params = new URLSearchParams({ page: String(page), limit: '50', ...(search && { search }), ...(region && { region }), ...(site && { site }), ...(type && { type }), ...(status && { status }), ...(lifecycle && { lifecycle }) })
     const res = await fetch(`/api/devices?${params}`)
     const data = await res.json()
@@ -61,9 +71,64 @@ export default function DevicesPage() {
 
   useEffect(() => { fetchDevices() }, [fetchDevices])
 
+  function toggleSelect(id: string) {
+    setSelected(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function toggleAll() {
+    if (selected.size === devices.length) setSelected(new Set())
+    else setSelected(new Set(devices.map(d => d.id)))
+  }
+
+  async function bulkUpdate() {
+    if (!selected.size || !bulkValue) return
+    setBulkLoading(true)
+    await fetch('/api/devices/bulk', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: Array.from(selected), field: bulkField, value: bulkValue })
+    })
+    setBulkLoading(false)
+    setSelected(new Set())
+    setBulkValue('')
+    fetchDevices()
+  }
+
   async function deleteDevice(id: string, name: string) {
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
     await fetch(`/api/devices/${id}`, { method: 'DELETE' })
+    fetchDevices()
+  }
+
+  async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImportFile(file)
+    setImportResult('')
+    const formData = new FormData()
+    formData.append('file', file)
+    setImportLoading(true)
+    const res = await fetch('/api/import/preview', { method: 'POST', body: formData })
+    const data = await res.json()
+    setImportPreview(data.preview || [])
+    setImportLoading(false)
+  }
+
+  async function confirmImport() {
+    if (!importFile) return
+    setImportLoading(true)
+    const formData = new FormData()
+    formData.append('file', importFile)
+    const res = await fetch('/api/import', { method: 'POST', body: formData })
+    const data = await res.json()
+    setImportResult(`Done! Imported: ${data.inserted}, Skipped: ${data.skipped}`)
+    setImportLoading(false)
+    setImportFile(null)
+    setImportPreview([])
     fetchDevices()
   }
 
@@ -79,10 +144,75 @@ export default function DevicesPage() {
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button className="btn-secondary" onClick={() => window.location.href='/api/export'} style={{ fontSize: '13px' }}>Export CSV</button>
-          {isAdmin && <Link href="/devices/new"><button className="btn-primary">+ Add device</button></Link>}
+          {isAdmin && <>
+            <button className="btn-secondary" onClick={() => { setShowImport(!showImport); setImportResult('') }} style={{ fontSize: '13px' }}>Import Excel</button>
+            <Link href="/devices/new"><button className="btn-primary">+ Add device</button></Link>
+          </>}
         </div>
       </div>
 
+      {/* Import panel */}
+      {showImport && isAdmin && (
+        <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', padding: '20px 24px', marginBottom: '16px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#111827', marginBottom: '12px' }}>Import devices from Excel / CSV</h3>
+          <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '12px' }}>File must have columns: Name, Brand, Model, S/N, Type, IP Address, Site, Country, Lifecycle Status, Device Status</p>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '12px' }}>
+            <input type="file" accept=".xlsx,.csv" onChange={handleImportFile} style={{ fontSize: '13px' }} />
+            {importLoading && <span style={{ fontSize: '13px', color: '#9ca3af' }}>Processing...</span>}
+          </div>
+          {importPreview.length > 0 && (
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ fontSize: '13px', color: '#374151', marginBottom: '8px', fontWeight: '500' }}>Preview — first {importPreview.length} rows:</div>
+              <div style={{ overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: '6px' }}>
+                <table style={{ fontSize: '12px', minWidth: '600px' }}>
+                  <thead>
+                    <tr>
+                      {Object.keys(importPreview[0] || {}).slice(0, 7).map(k => <th key={k}>{k}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {importPreview.map((row, i) => (
+                      <tr key={i}>
+                        {Object.values(row).slice(0, 7).map((v: any, j) => <td key={j}>{String(v || '—')}</td>)}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <button className="btn-primary" onClick={confirmImport} disabled={importLoading} style={{ marginTop: '10px' }}>
+                {importLoading ? 'Importing...' : `Confirm import`}
+              </button>
+            </div>
+          )}
+          {importResult && <div style={{ background: '#dcfce7', color: '#166534', padding: '10px 14px', borderRadius: '6px', fontSize: '13px' }}>{importResult}</div>}
+        </div>
+      )}
+
+      {/* Bulk action bar */}
+      {isAdmin && selected.size > 0 && (
+        <div style={{ background: '#1a2744', borderRadius: '8px', padding: '10px 16px', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '13px', color: 'white', fontWeight: '500' }}>{selected.size} device{selected.size > 1 ? 's' : ''} selected</span>
+          <select value={bulkField} onChange={e => setBulkField(e.target.value)} style={{ padding: '5px 10px', borderRadius: '5px', fontSize: '12px', border: 'none', background: 'rgba(255,255,255,0.15)', color: 'white' }}>
+            <option value="device_status">Device status</option>
+            <option value="lifecycle_status">Lifecycle status</option>
+          </select>
+          <select value={bulkValue} onChange={e => setBulkValue(e.target.value)} style={{ padding: '5px 10px', borderRadius: '5px', fontSize: '12px', border: 'none', background: 'rgba(255,255,255,0.15)', color: 'white' }}>
+            <option value="">Set value...</option>
+            {bulkField === 'device_status'
+              ? ['Active','Decommed','Faulty, Replaced','Spare'].map(s => <option key={s}>{s}</option>)
+              : ['Active, Supported','EOL / EOS','Unknown'].map(s => <option key={s}>{s}</option>)
+            }
+          </select>
+          <button onClick={bulkUpdate} disabled={!bulkValue || bulkLoading} style={{ padding: '5px 14px', background: '#C8102E', color: 'white', border: 'none', borderRadius: '5px', fontSize: '12px', cursor: 'pointer', fontWeight: '500' }}>
+            {bulkLoading ? 'Updating...' : 'Apply'}
+          </button>
+          <button onClick={() => setSelected(new Set())} style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '5px', fontSize: '12px', cursor: 'pointer' }}>
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
         {[{ label: 'Total devices', value: stats.total.toLocaleString(), color: '#1a2744' }, { label: 'Active', value: stats.active.toLocaleString(), color: '#166534' }, { label: 'EOL / EOS', value: stats.eol.toLocaleString(), color: '#991b1b' }, { label: 'Decommed', value: stats.decommed.toLocaleString(), color: '#92400e' }].map(s => (
           <div key={s.label} style={{ background: 'white', borderRadius: '8px', border: '1px solid #e5e7eb', padding: '14px 16px' }}>
@@ -92,6 +222,7 @@ export default function DevicesPage() {
         ))}
       </div>
 
+      {/* Filters */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
         <input className="input" style={{ flex: '1', minWidth: '200px', maxWidth: '320px' }} placeholder="Search name, IP, model, serial..." value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} />
         <select className="select" value={region} onChange={e => { setRegion(e.target.value); setSite(''); setPage(1) }}>
@@ -121,6 +252,7 @@ export default function DevicesPage() {
         )}
       </div>
 
+      {/* Table */}
       <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
         {loading ? (
           <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Loading devices...</div>
@@ -131,15 +263,19 @@ export default function DevicesPage() {
             <table>
               <thead>
                 <tr>
+                  {isAdmin && <th style={{ width: '40px' }}><input type="checkbox" checked={selected.size === devices.length && devices.length > 0} onChange={toggleAll} /></th>}
                   <th>Name</th><th>Type</th><th>Brand / Model</th><th>IP address</th>
                   <th>Site</th><th>Region</th><th>Lifecycle</th><th>Status</th>
-                  {isAdmin && <th>Actions</th>}
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {devices.map(d => (
-                  <tr key={d.id}>
-                    <td style={{ fontWeight: '500', color: '#111827' }} title={d.name}>{d.name || '—'}</td>
+                  <tr key={d.id} style={{ background: selected.has(d.id) ? '#fef9f9' : undefined }}>
+                    {isAdmin && <td><input type="checkbox" checked={selected.has(d.id)} onChange={() => toggleSelect(d.id)} /></td>}
+                    <td style={{ fontWeight: '500', color: '#111827' }} title={d.name}>
+                      <Link href={`/devices/${d.id}`} style={{ color: '#111827', textDecoration: 'none' }}>{d.name || '—'}</Link>
+                    </td>
                     <td>{d.device_type}</td>
                     <td title={`${d.brand} ${d.model}`}>{d.brand} {d.model}</td>
                     <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{d.ip_address || '—'}</td>
@@ -147,16 +283,19 @@ export default function DevicesPage() {
                     <td><span style={{ fontSize: '11px', color: '#6b7280' }}>{d.region}</span></td>
                     <td><LifecycleBadge status={d.lifecycle_status} /></td>
                     <td><StatusBadge status={d.device_status} /></td>
-                    {isAdmin && (
-                      <td>
-                        <div style={{ display: 'flex', gap: '6px' }}>
+                    <td>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <Link href={`/devices/${d.id}`}>
+                          <button style={{ padding: '4px 10px', fontSize: '12px', border: '1px solid #d1d5db', borderRadius: '5px', background: 'white', cursor: 'pointer' }}>View</button>
+                        </Link>
+                        {isAdmin && <>
                           <Link href={`/devices/${d.id}/edit`}>
                             <button style={{ padding: '4px 10px', fontSize: '12px', border: '1px solid #d1d5db', borderRadius: '5px', background: 'white', cursor: 'pointer' }}>Edit</button>
                           </Link>
                           <button className="btn-danger" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={() => deleteDevice(d.id, d.name)}>Delete</button>
-                        </div>
-                      </td>
-                    )}
+                        </>}
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
