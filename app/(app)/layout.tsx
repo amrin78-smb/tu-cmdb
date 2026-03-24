@@ -9,6 +9,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: '▤' },
   { href: '/devices', label: 'All devices', icon: '☰' },
   { href: '/sites', label: 'Sites', icon: '◈' },
+  { href: '/circuits', label: 'WAN circuits', icon: '⇌' },
   { href: '/eol', label: 'EOL / Risk', icon: '⚠' },
   { href: '/audit', label: 'Audit log', icon: '≡', adminOnly: true },
   { href: '/users', label: 'Users', icon: '◎', adminOnly: true },
