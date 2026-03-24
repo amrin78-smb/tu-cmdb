@@ -5,7 +5,8 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 
 const navItems = [
-  { href: '/devices', label: 'All devices', icon: '▤' },
+  { href: '/dashboard', label: 'Dashboard', icon: '▤' },
+  { href: '/devices', label: 'All devices', icon: '☰' },
   { href: '/eol', label: 'EOL / Risk', icon: '⚠' },
   { href: '/audit', label: 'Audit log', icon: '≡', adminOnly: true },
   { href: '/users', label: 'Users', icon: '◎', adminOnly: true },
@@ -48,7 +49,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <nav style={{ flex: 1, padding: '12px 8px' }}>
           {navItems.map(item => {
             if (item.adminOnly && user?.role !== 'admin') return null
-            const active = pathname.startsWith(item.href)
+            const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
             return (
               <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '7px', marginBottom: '2px', background: active ? 'rgba(200,16,46,0.2)' : 'transparent', borderLeft: active ? '3px solid #C8102E' : '3px solid transparent', cursor: 'pointer' }}>
