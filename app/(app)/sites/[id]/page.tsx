@@ -224,7 +224,7 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
                   <div style={{ fontSize: '12px', fontWeight: '600', color: group.color, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>{group.label} — {group.items.length}</div>
                   <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
                     <table>
-                      <thead><tr><th>ISP</th><th>Circuit ID</th><th>Technology</th><th>Max speed</th><th>Public subnet</th><th>Cost/month</th><th>Pingable</th><th></th></tr></thead>
+                      <thead><tr><th>ISP</th><th>Circuit ID</th><th>Technology</th><th>Max speed</th><th>Public subnet</th><th>Cost/month</th><th></th></tr></thead>
                       <tbody>
                         {group.items.map((c: Circuit) => (
                           <tr key={c.id}>
@@ -234,7 +234,7 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
                             <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{c.max_speed || '—'}</td>
                             <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{c.public_subnet && c.public_subnet !== '-' && c.public_subnet !== 'nan' ? c.public_subnet : '—'}</td>
                             <td style={{ fontSize: '12px' }}>{c.cost_month ? `${c.currency || 'THB'} ${parseFloat(c.cost_month).toLocaleString()}` : '—'}</td>
-                            <td><span className="badge" style={{ background: c.pingable === 'Yes' ? '#dcfce7' : '#f3f4f6', color: c.pingable === 'Yes' ? '#166534' : '#6b7280' }}>{c.pingable && c.pingable !== 'nan' ? c.pingable : '—'}</span></td>
+                            
                             <td><Link href={`/circuits/${c.id}`}><button style={{ padding: '4px 10px', fontSize: '12px', border: '1px solid #d1d5db', borderRadius: '5px', background: 'white', cursor: 'pointer' }}>View</button></Link></td>
                           </tr>
                         ))}

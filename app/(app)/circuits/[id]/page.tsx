@@ -134,7 +134,6 @@ export default function CircuitDetailPage({ params }: { params: Promise<{ id: st
               </div>
               <EditField label="Cost/month" field="cost_month" type="number" />
               <EditField label="Contract term" field="contract_term" />
-              <EditField label="Pingable" field="pingable" />
               <div style={{ gridColumn: '1 / -1' }}>
                 <label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>Comment</label>
                 <textarea className="input" rows={3} value={form.comment || ''} onChange={e => setForm((f: Circuit) => ({ ...f, comment: e.target.value }))} style={{ resize: 'vertical' }} />
@@ -170,7 +169,6 @@ export default function CircuitDetailPage({ params }: { params: Promise<{ id: st
               <Field label="Currency" value={circuit.currency || 'THB'} />
               <Field label="Cost / month" value={formatCost(circuit.cost_month, circuit.currency)} />
               <Field label="Contract term" value={circuit.contract_term} />
-              <Field label="Pingable from IDC" value={circuit.pingable} />
               <div style={{ gridColumn: '1 / -1' }}><Field label="Comment" value={circuit.comment} /></div>
             </Section>
           </div>
