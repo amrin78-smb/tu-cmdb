@@ -21,11 +21,13 @@ export default function LoginPage() {
     app_primary_color: '#C8102E',
     app_navy_color: '#1a2744',
   })
+  const [settingsLoaded, setSettingsLoaded] = useState(false)
 
   useEffect(() => {
     fetch('/api/settings').then(r => r.json()).then(d => {
       if (d && !d.error) setSettings(d)
-    }).catch(() => {})
+      setSettingsLoaded(true)
+    }).catch(() => setSettingsLoaded(true))
   }, [])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -43,32 +45,39 @@ export default function LoginPage() {
 
   const navy = settings.app_navy_color || '#1a2744'
   const primary = settings.app_primary_color || '#C8102E'
+  const hasLogo = settingsLoaded && settings.app_logo_url && settings.app_logo_url.length > 0
 
   return (
-    <div style={{ minHeight: '100vh', background: `linear-gradient(135deg, ${navy} 0%, ${navy}dd 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+    <div style={{ minHeight: '100vh', background: `linear-gradient(135deg, ${navy} 0%, ${navy}cc 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div style={{ width: '100%', maxWidth: '420px' }}>
+
+        {/* Logo / branding */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
-            {settings.app_logo_url ? (
-              <div style={{ textAlign: 'center' }}>
-                <img src={settings.app_logo_url} alt="logo" style={{ maxWidth: '200px', maxHeight: '64px', objectFit: 'contain', marginBottom: '8px' }} />
-                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>{settings.app_subtitle}</div>
+          {hasLogo ? (
+            <div>
+              <img
+                src={settings.app_logo_url}
+                alt={settings.app_name}
+                style={{ maxWidth: '200px', maxHeight: '72px', objectFit: 'contain', marginBottom: '10px' }}
+              />
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>{settings.app_subtitle}</div>
+            </div>
+          ) : (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '44px', height: '44px', background: primary, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+                </svg>
               </div>
-            ) : (
-              <>
-                <div style={{ width: '48px', height: '48px', background: primary, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
-                  </svg>
-                </div>
-                <div>
-                  <div style={{ color: 'white', fontSize: '22px', fontWeight: '700' }}>{settings.app_name}</div>
-                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>{settings.app_subtitle}</div>
-                </div>
-              </>
-            )}
-          </div>
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ color: 'white', fontSize: '22px', fontWeight: '700', lineHeight: 1.1 }}>{settings.app_name}</div>
+                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', marginTop: '2px' }}>{settings.app_subtitle}</div>
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Login card */}
         <div style={{ background: 'white', borderRadius: '12px', padding: '36px 40px' }}>
           <h1 style={{ fontSize: '20px', fontWeight: '600', color: '#111827', marginBottom: '6px', textAlign: 'center' }}>Sign in</h1>
           <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '28px', textAlign: 'center' }}>Network Device Inventory</p>
@@ -76,7 +85,6 @@ export default function LoginPage() {
             <div style={{ marginBottom: '18px' }}>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: '#374151', marginBottom: '6px' }}>Email address</label>
               <input
-                className="input"
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
