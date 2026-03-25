@@ -31,13 +31,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     UPDATE circuits SET
       isp=$1, usage=$2, circuit_id=$3, product=$4, technology=$5,
       circuit_type=$6, interface=$7, max_speed=$8, guaranteed_speed=$9,
-      public_subnet=$10, cost_month=$11, contract_term=$12, comment=$13,
-      pingable=$14, updated_at=NOW()
-    WHERE id=$15
-  `, [body.isp, body.usage, body.circuit_id, body.product, body.technology,
-      body.circuit_type, body.interface, body.max_speed, body.guaranteed_speed,
-      body.public_subnet, body.cost_month||null, body.contract_term, body.comment,
-      body.pingable, id])
+      public_subnet=$10, currency=$11, cost_month=$12, contract_term=$13,
+      comment=$14, pingable=$15, updated_at=NOW()
+    WHERE id=$16
+  `, [
+    body.isp, body.usage, body.circuit_id, body.product, body.technology,
+    body.circuit_type, body.interface, body.max_speed, body.guaranteed_speed,
+    body.public_subnet, body.currency || 'THB', body.cost_month || null,
+    body.contract_term, body.comment, body.pingable, id
+  ])
   return NextResponse.json({ success: true })
 }
 
