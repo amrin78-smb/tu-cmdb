@@ -6,8 +6,8 @@ import { Providers } from './providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'TU CMDB — Thai Union Network Inventory',
-  description: 'Thai Union Group network device management system',
+  title: 'NetVault — Network Intelligence Platform',
+  description: 'NetVault — Secure network infrastructure management',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
