@@ -53,6 +53,7 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
   if (!data) return <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Site not found</div>
 
   const { site, devices } = data
+  const s = site as any
   const total = devices.length
   const active = devices.filter(d => d.device_status === 'Active').length
   const eol = devices.filter(d => d.lifecycle_status === 'EOL / EOS').length
@@ -145,6 +146,43 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
           </div>
         ))}
       </div>
+
+      {/* Site info panel */}
+      {(s.address || s.city || s.coordinates || s.contact_name || s.site_type) && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px', marginBottom: '20px' }}>
+          {s.site_type && (
+            <div style={{ background: 'white', borderRadius: '8px', border: '1px solid #e5e7eb', padding: '12px 16px' }}>
+              <div style={{ fontSize: '10px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>Site type</div>
+              <div style={{ fontSize: '13px', fontWeight: '500', color: '#111827' }}>{s.site_type}</div>
+            </div>
+          )}
+          {(s.city || s.address) && (
+            <div style={{ background: 'white', borderRadius: '8px', border: '1px solid #e5e7eb', padding: '12px 16px' }}>
+              <div style={{ fontSize: '10px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>Location</div>
+              <div style={{ fontSize: '13px', fontWeight: '500', color: '#111827' }}>{s.city}</div>
+              {s.address && <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px', lineHeight: '1.4' }}>{s.address}</div>}
+            </div>
+          )}
+          {s.coordinates && (
+            <div style={{ background: 'white', borderRadius: '8px', border: '1px solid #e5e7eb', padding: '12px 16px' }}>
+              <div style={{ fontSize: '10px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>GPS coordinates</div>
+              <div style={{ fontSize: '12px', fontFamily: 'monospace', color: '#374151' }}>{s.coordinates}</div>
+              <a href={`https://www.google.com/maps?q=${s.coordinates}`} target="_blank" rel="noopener noreferrer"
+                style={{ fontSize: '11px', color: '#C8102E', textDecoration: 'none', marginTop: '4px', display: 'inline-block' }}>
+                Open in Maps →
+              </a>
+            </div>
+          )}
+          {(s.contact_name || s.contact_email || s.phone) && (
+            <div style={{ background: 'white', borderRadius: '8px', border: '1px solid #e5e7eb', padding: '12px 16px' }}>
+              <div style={{ fontSize: '10px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>Site contact</div>
+              {s.contact_name && <div style={{ fontSize: '13px', fontWeight: '500', color: '#111827' }}>{s.contact_name}</div>}
+              {s.contact_email && <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>{s.contact_email}</div>}
+              {s.phone && <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>{s.phone}</div>}
+            </div>
+          )}
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: '0', marginBottom: '16px', borderBottom: '2px solid #f3f4f6' }}>
         {(['devices', 'circuits'] as const).map(tab => (
