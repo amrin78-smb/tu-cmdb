@@ -328,7 +328,7 @@ export default function SettingsPage() {
               <tbody>
                 {filteredSites.map(s => (
                   <tr key={s.id}>
-                    <td style={{ fontWeight: '500', color: '#111827' }}>{s.name}</td>
+                    <td style={{ fontWeight: '500', color: '#111827' }}>{s.site || s.name}</td>
                     <td style={{ fontFamily: 'monospace', fontSize: '12px', color: '#6b7280' }}>{s.code || '—'}</td>
                     <td>{s.country}</td>
                     <td><span style={{ fontSize: '11px', color: '#6b7280' }}>{s.region}</span></td>
