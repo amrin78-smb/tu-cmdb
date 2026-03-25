@@ -4,8 +4,6 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
 
 export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const res = await query('SELECT key, value FROM app_settings')
   const settings: Record<string, string> = {}
   res.rows.forEach(r => { settings[r.key] = r.value })
