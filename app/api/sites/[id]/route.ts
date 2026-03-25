@@ -11,6 +11,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const [siteRes, devicesRes] = await Promise.all([
     query(`
       SELECT s.id, s.name as site, s.code,
+             s.city, s.address, s.coordinates, s.postal_code,
+             s.site_type, s.phone, s.contact_name, s.contact_email,
              c.name as country, c.iso_code, r.name as region
       FROM sites s
       JOIN countries c ON c.id = s.country_id
@@ -47,13 +49,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params
   const body = await req.json()
   await query(
-    \`UPDATE sites SET
+    `UPDATE sites SET
       name=$1, code=$2, city=$3, address=$4, postal_code=$5,
       coordinates=$6, site_type=$7, phone=$8, contact_name=$9, contact_email=$10
-     WHERE id=$11\`,
-    [body.name, body.code||null, body.city||null, body.address||null,
-     body.postal_code||null, body.coordinates||null, body.site_type||null,
-     body.phone||null, body.contact_name||null, body.contact_email||null, id]
+     WHERE id=$11`,
+    [
+      body.name, body.code||null, body.city||null, body.address||null,
+      body.postal_code||null, body.coordinates||null, body.site_type||null,
+      body.phone||null, body.contact_name||null, body.contact_email||null, id
+    ]
   )
   return NextResponse.json({ success: true })
 }
