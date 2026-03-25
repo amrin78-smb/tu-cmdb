@@ -29,19 +29,19 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
   const [typeFilter, setTypeFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [activeTab, setActiveTab] = useState<'devices'|'circuits'>('devices')
-  const [siteId, setSiteId] = useState('')
 
   useEffect(() => {
-    params.then(p => {
-      setSiteId(p.id)
-      Promise.all([
+    params.then(async p => {
+      const [siteData, allCircuits] = await Promise.all([
         fetch(`/api/sites/${p.id}`).then(r => r.json()),
-        fetch(`/api/circuits?site_id=${p.id}`).then(r => r.json()),
-      ]).then(([siteData, circuitData]) => {
-        setData(siteData)
-        setCircuits(Array.isArray(circuitData) ? circuitData.filter((c: Circuit) => c.site_id === parseInt(p.id)) : [])
-        setLoading(false)
-      })
+        fetch(`/api/circuits`).then(r => r.json()),
+      ])
+      setData(siteData)
+      const siteCircuits = Array.isArray(allCircuits)
+        ? allCircuits.filter((c: Circuit) => String(c.site_id) === String(p.id))
+        : []
+      setCircuits(siteCircuits)
+      setLoading(false)
     })
   }, [params])
 
@@ -69,6 +69,7 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
 
   const mainCircuits = circuits.filter(c => c.usage?.toLowerCase() === 'main')
   const backupCircuits = circuits.filter(c => c.usage?.toLowerCase() === 'backup')
+  const otherCircuits = circuits.filter(c => !['main','backup'].includes(c.usage?.toLowerCase()))
 
   return (
     <div style={{ padding: '24px 28px' }}>
@@ -89,7 +90,6 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
         {isAdmin && <Link href="/devices/new"><button className="btn-primary">+ Add device</button></Link>}
       </div>
 
-      {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '12px', marginBottom: '20px' }}>
         {[
           { label: 'Total devices', value: total, color: '#1a2744' },
@@ -105,7 +105,6 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
         ))}
       </div>
 
-      {/* Tabs */}
       <div style={{ display: 'flex', gap: '0', marginBottom: '16px', borderBottom: '2px solid #f3f4f6' }}>
         {(['devices', 'circuits'] as const).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '10px 20px', fontSize: '14px', fontWeight: activeTab === tab ? '600' : '400', color: activeTab === tab ? '#C8102E' : '#6b7280', background: 'none', border: 'none', borderBottom: activeTab === tab ? '2px solid #C8102E' : '2px solid transparent', cursor: 'pointer', marginBottom: '-2px', textTransform: 'capitalize' }}>
@@ -176,25 +175,25 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
       {activeTab === 'circuits' && (
         <div>
           {circuits.length === 0 ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af', background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb' }}>No circuits for this site</div>
+            <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af', background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb' }}>No WAN circuits for this site</div>
           ) : (
             <>
-              {mainCircuits.length > 0 && (
-                <div style={{ marginBottom: '16px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: '600', color: '#075985', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>Main links — {mainCircuits.length}</div>
+              {[{ label: 'Main links', items: mainCircuits, color: '#075985' }, { label: 'Backup links', items: backupCircuits, color: '#6b7280' }, { label: 'Other', items: otherCircuits, color: '#92400e' }].filter(g => g.items.length > 0).map(group => (
+                <div key={group.label} style={{ marginBottom: '16px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', color: group.color, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>{group.label} — {group.items.length}</div>
                   <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
                     <table>
                       <thead><tr><th>ISP</th><th>Circuit ID</th><th>Technology</th><th>Max speed</th><th>Public subnet</th><th>Cost/month</th><th>Pingable</th><th></th></tr></thead>
                       <tbody>
-                        {mainCircuits.map((c: Circuit) => (
+                        {group.items.map((c: Circuit) => (
                           <tr key={c.id}>
                             <td style={{ fontWeight: '500' }}>{c.isp}</td>
                             <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{c.circuit_id || '—'}</td>
-                            <td><span className="badge" style={{ background: '#ede9fe', color: '#5b21b6' }}>{c.technology || '—'}</span></td>
+                            <td><span className="badge" style={{ background: '#ede9fe', color: '#5b21b6' }}>{c.technology && c.technology !== 'nan' ? c.technology : '—'}</span></td>
                             <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{c.max_speed || '—'}</td>
-                            <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{c.public_subnet && c.public_subnet !== '-' ? c.public_subnet : '—'}</td>
+                            <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{c.public_subnet && c.public_subnet !== '-' && c.public_subnet !== 'nan' ? c.public_subnet : '—'}</td>
                             <td style={{ fontSize: '12px' }}>{c.cost_month ? `THB ${parseFloat(c.cost_month).toLocaleString()}` : '—'}</td>
-                            <td><span className="badge" style={{ background: c.pingable === 'Yes' ? '#dcfce7' : '#f3f4f6', color: c.pingable === 'Yes' ? '#166534' : '#6b7280' }}>{c.pingable || '—'}</span></td>
+                            <td><span className="badge" style={{ background: c.pingable === 'Yes' ? '#dcfce7' : '#f3f4f6', color: c.pingable === 'Yes' ? '#166534' : '#6b7280' }}>{c.pingable && c.pingable !== 'nan' ? c.pingable : '—'}</span></td>
                             <td><Link href={`/circuits/${c.id}`}><button style={{ padding: '4px 10px', fontSize: '12px', border: '1px solid #d1d5db', borderRadius: '5px', background: 'white', cursor: 'pointer' }}>View</button></Link></td>
                           </tr>
                         ))}
@@ -202,31 +201,7 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
                     </table>
                   </div>
                 </div>
-              )}
-              {backupCircuits.length > 0 && (
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>Backup links — {backupCircuits.length}</div>
-                  <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-                    <table>
-                      <thead><tr><th>ISP</th><th>Circuit ID</th><th>Technology</th><th>Max speed</th><th>Public subnet</th><th>Cost/month</th><th>Pingable</th><th></th></tr></thead>
-                      <tbody>
-                        {backupCircuits.map((c: Circuit) => (
-                          <tr key={c.id}>
-                            <td style={{ fontWeight: '500' }}>{c.isp}</td>
-                            <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{c.circuit_id || '—'}</td>
-                            <td><span className="badge" style={{ background: '#ede9fe', color: '#5b21b6' }}>{c.technology || '—'}</span></td>
-                            <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{c.max_speed || '—'}</td>
-                            <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{c.public_subnet && c.public_subnet !== '-' ? c.public_subnet : '—'}</td>
-                            <td style={{ fontSize: '12px' }}>{c.cost_month ? `THB ${parseFloat(c.cost_month).toLocaleString()}` : '—'}</td>
-                            <td><span className="badge" style={{ background: c.pingable === 'Yes' ? '#dcfce7' : '#f3f4f6', color: c.pingable === 'Yes' ? '#166634' : '#6b7280' }}>{c.pingable || '—'}</span></td>
-                            <td><Link href={`/circuits/${c.id}`}><button style={{ padding: '4px 10px', fontSize: '12px', border: '1px solid #d1d5db', borderRadius: '5px', background: 'white', cursor: 'pointer' }}>View</button></Link></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
+              ))}
             </>
           )}
         </div>
