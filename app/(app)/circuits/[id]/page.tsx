@@ -63,8 +63,8 @@ export default function CircuitDetailPage({ params }: { params: Promise<{ id: st
   const Field = ({ label, value }: { label: string; value: any }) => (
     <div style={{ marginBottom: '14px' }}>
       <div style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '3px' }}>{label}</div>
-      <div style={{ fontSize: '14px', color: value && value !== 'nan' && value !== '-' ? '#111827' : '#d1d5db', fontFamily: ['Circuit ID','Public subnet','Max speed','Guaranteed speed'].includes(label) ? 'monospace' : undefined }}>
-        {value && value !== 'nan' && value !== '-' ? value : '—'}
+      <div style={{ fontSize: '14px', color: value && String(value) !== 'nan' && value !== '-' ? '#111827' : '#d1d5db', fontFamily: ['Circuit ID','Public subnet','Max speed','Guaranteed speed'].includes(label) ? 'monospace' : undefined }}>
+        {value && String(value) !== 'nan' && value !== '-' ? value : '—'}
       </div>
     </div>
   )
