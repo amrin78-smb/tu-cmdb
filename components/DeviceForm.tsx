@@ -15,7 +15,7 @@ export default function DeviceForm({ initialData, deviceId }: DeviceFormProps) {
   const [lookups, setLookups] = useState<Lookups | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [form, setForm] = useState({ name: '', brand: '', model: '', serial_number: '', device_type: '', ip_address: '', mgmt_protocol: '', mgmt_url: '', site: '', location_detail: '', lifecycle_status: 'Unknown', device_status: 'Active', risk_score: '', technical_debt: '', remark: '', cost: '', purchase_date: '', purchase_vendor: '', ma_vendor: '', ...initialData })
+  const [form, setForm] = useState({ name: '', brand: '', model: '', serial_number: '', device_type: '', device_type_other: '', ip_address: '', mgmt_protocol: '', mgmt_url: '', site: '', location_detail: '', lifecycle_status: 'Unknown', device_status: 'Active', risk_score: '', technical_debt: '', remark: '', cost: '', purchase_date: '', purchase_vendor: '', ma_vendor: '', ...initialData })
 
   useEffect(() => { fetch('/api/lookup').then(r => r.json()).then(setLookups) }, [])
   function set(field: string, value: string) { setForm(f => ({ ...f, [field]: value })) }
@@ -23,6 +23,8 @@ export default function DeviceForm({ initialData, deviceId }: DeviceFormProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.name || !form.device_type || !form.site) { setError('Name, device type and site are required'); return }
+    if (form.device_type === 'Others' && !(form as any).device_type_other) { setError('Please specify the device type'); return }
+    if (form.device_type === 'Others') (form as any).device_type = (form as any).device_type_other
     setSaving(true); setError('')
     const res = await fetch(deviceId ? `/api/devices/${deviceId}` : '/api/devices', {
       method: deviceId ? 'PUT' : 'POST',
@@ -68,9 +70,16 @@ export default function DeviceForm({ initialData, deviceId }: DeviceFormProps) {
           <Field label="Device type" required>
             <select {...inp} value={form.device_type} onChange={e => set('device_type', e.target.value)}>
               <option value="">Select type</option>
-              {lookups.deviceTypes.map(t => <option key={t}>{t}</option>)}
+              {['Access Point', 'Core Switch', 'Firewall', 'Router', 'Switch', 'Wireless Controller', 'Server', 'Virtual Machine', 'UPS', 'Others'].map((t: string) => <option key={t} value={t}>{t}</option>)}
             </select>
           </Field>
+          {form.device_type === 'Others' && (
+            <Field label="Specify device type" required>
+              <input {...inp} placeholder="e.g. CCTV Camera, PLC, KVM Switch..."
+                value={(form as any).device_type_other || ''}
+                onChange={e => set('device_type_other', e.target.value)} />
+            </Field>
+          )}
           <Field label="Brand">
             <select {...inp} value={form.brand} onChange={e => set('brand', e.target.value)}>
               <option value="">Select brand</option>
