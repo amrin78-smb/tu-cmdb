@@ -127,7 +127,7 @@ export default function DashboardPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: '700', color: '#111827', margin: 0 }}>Dashboard</h1>
-          <p style={{ fontSize: '13px', color: '#9ca3af', margin: '2px 0 0' }}>Network infrastructure overview</p>
+          <p style={{ fontSize: '13px', color: '#9ca3af', margin: '2px 0 0' }}>Infrastructure overview</p>
         </div>
         <Link href="/devices">
           <button style={{ padding: '7px 14px', background: '#1a2744', color: 'white', border: 'none', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>View all devices →</button>

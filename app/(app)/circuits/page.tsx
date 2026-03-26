@@ -86,7 +86,7 @@ export default function CircuitsPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: '700', color: '#111827', margin: 0 }}>WAN Circuits</h1>
-          <p style={{ fontSize: '13px', color: '#9ca3af', margin: '2px 0 0' }}>ISP circuit inventory across all sites</p>
+          <p style={{ fontSize: '13px', color: '#9ca3af', margin: '2px 0 0' }}>Circuit inventory across all sites</p>
         </div>
       </div>
 

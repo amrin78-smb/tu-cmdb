@@ -80,7 +80,7 @@ export default function LoginPage() {
         {/* Login card */}
         <div style={{ background: 'white', borderRadius: '12px', padding: '36px 40px' }}>
           <h1 style={{ fontSize: '20px', fontWeight: '600', color: '#111827', marginBottom: '6px', textAlign: 'center' }}>Sign in</h1>
-          <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '28px', textAlign: 'center' }}>Network Device Inventory</p>
+          <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '28px', textAlign: 'center' }}>IT Asset Management</p>
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '18px' }}>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: '#374151', marginBottom: '6px' }}>Email address</label>

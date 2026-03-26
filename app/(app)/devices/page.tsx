@@ -139,8 +139,8 @@ export default function DevicesPage() {
     <div style={{ padding: '24px 28px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: '700', color: '#111827', margin: 0 }}>Network devices</h1>
-          <p style={{ fontSize: '13px', color: '#9ca3af', margin: '2px 0 0' }}>Global network inventory</p>
+          <h1 style={{ fontSize: '22px', fontWeight: '700', color: '#111827', margin: 0 }}>Devices</h1>
+          <p style={{ fontSize: '13px', color: '#9ca3af', margin: '2px 0 0' }}>IT asset inventory</p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button className="btn-secondary" onClick={() => window.location.href='/api/export'} style={{ fontSize: '13px' }}>Export CSV</button>

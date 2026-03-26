@@ -14,7 +14,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: '▤', hideForSiteAdmin: true },
   { href: '/devices', label: 'All devices', icon: '☰', hideForSiteAdmin: true },
   { href: '/sites', label: 'Sites', icon: '◈' },
-  { href: '/circuits', label: 'WAN circuits', icon: '⇌' },
+  { href: '/circuits', label: 'Circuits', icon: '⇌' },
   { href: '/eol', label: 'EOL / Risk', icon: '⚠', hideForSiteAdmin: true },
   { href: '/audit', label: 'Audit log', icon: '≡', adminOnly: true },
   { href: '/settings', label: 'Settings', icon: '⚙', adminOnly: true },

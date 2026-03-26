@@ -138,7 +138,7 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
           { label: 'Active', value: active, color: '#166534' },
           { label: 'EOL / EOS', value: eol, color: '#991b1b' },
           { label: 'Decommed', value: decommed, color: '#92400e' },
-          { label: 'WAN circuits', value: circuits.length, color: '#075985' },
+          { label: 'Circuits', value: circuits.length, color: '#075985' },
         ].map(s => (
           <div key={s.label} style={{ background: 'white', borderRadius: '8px', border: '1px solid #e5e7eb', padding: '14px 16px' }}>
             <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.label}</div>
@@ -254,7 +254,7 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
       {activeTab === 'circuits' && (
         <div>
           {circuits.length === 0 ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af', background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb' }}>No WAN circuits for this site</div>
+            <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af', background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb' }}>No Circuits for this site</div>
           ) : (
             <>
               {[{ label: 'Main links', items: mainCircuits, color: '#075985' }, { label: 'Backup links', items: backupCircuits, color: '#6b7280' }, { label: 'Other', items: otherCircuits, color: '#92400e' }].filter(g => g.items.length > 0).map(group => (

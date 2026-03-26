@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'NetVault — Network Intelligence Platform',
-  description: 'NetVault — Secure network infrastructure management',
+  description: 'NetVault — IT Asset Management Platform',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
