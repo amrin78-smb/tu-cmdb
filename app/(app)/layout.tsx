@@ -81,12 +81,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
             )}
-            {settings.app_logo_url && (
-              <div>
-                <div style={{ color: 'white', fontSize: '13px', fontWeight: '600' }}>{settings.app_name || 'NetVault'}</div>
-                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px' }}>{settings.app_subtitle || 'Network Intelligence Platform'}</div>
-              </div>
-            )}
+
           </div>
           <GlobalSearch />
         </div>
