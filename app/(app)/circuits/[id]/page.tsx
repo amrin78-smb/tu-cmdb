@@ -115,20 +115,35 @@ export default function CircuitDetailPage({ params }: { params: Promise<{ id: st
             <Section title="Circuit details">
               <EditField label="Circuit ID" field="circuit_id" />
               <EditField label="ISP" field="isp" />
-              <div style={ marginBottom: '14px' }>
-                <label style={ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }>Usage</label>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>USAGE</label>
                 <select className="input select" value={form.usage || ''} onChange={e => setForm((f: Circuit) => ({ ...f, usage: e.target.value }))}>
                   <option value="">Select usage</option>
-              <option>Primary Internet</option>
-              <option>Backup Internet</option>
-              <option>MPLS Primary</option>
-              <option>MPLS Backup</option>
-              <option>Guest Internet</option>
-              <option>Out-of-Band / Management</option>
-              <option>CCTV / Camera</option>
-              <option>IoT / OT</option>
-              <option>Compliance / Government</option>
-              <option>Others</option>
+                  <option key="Primary Internet">Primary Internet</option>
+                  <option key="Backup Internet">Backup Internet</option>
+                  <option key="MPLS Primary">MPLS Primary</option>
+                  <option key="MPLS Backup">MPLS Backup</option>
+                  <option key="Guest Internet">Guest Internet</option>
+                  <option key="Out-of-Band / Management">Out-of-Band / Management</option>
+                  <option key="CCTV / Camera">CCTV / Camera</option>
+                  <option key="IoT / OT">IoT / OT</option>
+                  <option key="Compliance / Government">Compliance / Government</option>
+                  <option key="Others">Others</option>
+                </select>
+              </div>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>PRODUCT</label>
+                <select className="input select" value={form.product || ''} onChange={e => setForm((f: Circuit) => ({ ...f, product: e.target.value }))}>
+                  <option value="">Select product</option>
+                  <option key="Corporate Internet / DIA">Corporate Internet / DIA</option>
+                  <option key="IPVPN / MPLS">IPVPN / MPLS</option>
+                  <option key="L2VPN / Private Link">L2VPN / Private Link</option>
+                  <option key="SME Internet FTTx">SME Internet FTTx</option>
+                  <option key="Home Broadband FTTx">Home Broadband FTTx</option>
+                  <option key="Satellite">Satellite</option>
+                  <option key="4G/5G Mobile">4G/5G Mobile</option>
+                  <option key="Dark Fiber">Dark Fiber</option>
+                  <option key="Others">Others</option>
                 </select>
               </div>
               <EditField label="Technology" field="technology" />
