@@ -115,7 +115,22 @@ export default function CircuitDetailPage({ params }: { params: Promise<{ id: st
             <Section title="Circuit details">
               <EditField label="Circuit ID" field="circuit_id" />
               <EditField label="ISP" field="isp" />
-              <EditField label="Usage" field="usage" />
+              <div style={ marginBottom: '14px' }>
+                <label style={ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }>Usage</label>
+                <select className="input select" value={form.usage || ''} onChange={e => setForm((f: Circuit) => ({ ...f, usage: e.target.value }))}>
+                  <option value="">Select usage</option>
+              <option>Primary Internet</option>
+              <option>Backup Internet</option>
+              <option>MPLS Primary</option>
+              <option>MPLS Backup</option>
+              <option>Guest Internet</option>
+              <option>Out-of-Band / Management</option>
+              <option>CCTV / Camera</option>
+              <option>IoT / OT</option>
+              <option>Compliance / Government</option>
+              <option>Others</option>
+                </select>
+              </div>
               <EditField label="Technology" field="technology" />
               <EditField label="Circuit type" field="circuit_type" />
               <EditField label="Interface" field="interface" />

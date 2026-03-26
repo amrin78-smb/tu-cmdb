@@ -21,7 +21,7 @@ export default function NewCircuitPage() {
   const [form, setForm] = useState({
     site_id: prefillSiteId,
     site_name: prefillSite,
-    isp: '', usage: 'Main', circuit_id: '', product: '',
+    isp: '', usage: 'Primary Internet', circuit_id: '', product: '',
     technology: '', circuit_type: '', interface: '',
     max_speed: '', guaranteed_speed: '', public_subnet: '',
     currency: 'THB', cost_month: '', contract_term: '',
