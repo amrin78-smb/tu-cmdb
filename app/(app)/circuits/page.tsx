@@ -137,12 +137,19 @@ export default function CircuitsPage() {
           <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>No circuits found</div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table>
+            <table style={{ tableLayout: 'fixed', minWidth: '900px' }}>
               <thead>
                 <tr>
-                  <th>Site</th><th>Country</th><th>ISP</th><th>Circuit ID</th>
-                  <th>Usage</th><th>Technology</th><th>Max speed</th>
-                  <th>Public subnet</th><th>Cost/month</th><th>Actions</th>
+                  <th style={{ width: '110px' }}>Site</th>
+                  <th style={{ width: '80px' }}>Country</th>
+                  <th style={{ width: '120px' }}>ISP</th>
+                  <th style={{ width: '100px' }}>Circuit ID</th>
+                  <th style={{ width: '90px' }}>Usage</th>
+                  <th style={{ width: '90px' }}>Technology</th>
+                  <th style={{ width: '120px' }}>Max speed</th>
+                  <th style={{ width: '120px' }}>Public subnet</th>
+                  <th style={{ width: '90px' }}>Cost/month</th>
+                  <th style={{ width: '110px' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
