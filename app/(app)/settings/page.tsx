@@ -282,7 +282,7 @@ export default function SettingsPage() {
                 ].map(f => (
                   <div key={f.field}>
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: '#374151', marginBottom: '5px' }}>{f.label}</label>
-                    <input className="input" type={f.type} placeholder={f.placeholder} value={userForm[f.field as keyof typeof userForm]} onChange={e => setUserForm(p => ({ ...p, [f.field]: e.target.value }))} />
+                    <input className="input" type={f.type} placeholder={f.placeholder} value={String(userForm[f.field as keyof typeof userForm] ?? '')} onChange={e => setUserForm(p => ({ ...p, [f.field]: e.target.value }))} />
                   </div>
                 ))}
                 <div>
