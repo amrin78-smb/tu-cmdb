@@ -25,7 +25,7 @@ export default function NewCircuitPage() {
     technology: '', circuit_type: '', interface: '',
     max_speed: '', guaranteed_speed: '', public_subnet: '',
     currency: 'THB', cost_month: '', contract_term: '',
-    comment: '', pingable: '', it_owner: '', city: '', address: '',
+    comment: '',  it_owner: '', city: '', address: '',
   })
 
   useEffect(() => {
@@ -146,20 +146,50 @@ export default function NewCircuitPage() {
             </select>
           </Field>
           <Field label="Technology">
-            <select className="input select" value={form.technology} onChange={e => set('technology', e.target.value)}>
-              <option value="">Select technology</option>
-              <option>DIA</option>
-              <option>MPLS</option>
-              <option>SD-WAN</option>
-              <option>Shared</option>
-              <option>Dedicated</option>
-            </select>
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>Technology</label>
+              <select className="input select" value={form.technology} onChange={e => set('technology', e.target.value)}>
+                <option value="">Select technology</option>
+              <option key='Fiber'>Fiber</option>
+              <option key='Copper / xDSL'>Copper / xDSL</option>
+              <option key='Coax / Cable'>Coax / Cable</option>
+              <option key='Wireless / Radio'>Wireless / Radio</option>
+              <option key='Satellite'>Satellite</option>
+              <option key='4G/5G Mobile'>4G/5G Mobile</option>
+              <option key='SD-WAN Overlay'>SD-WAN Overlay</option>
+              <option key='Others'>Others</option>
+              </select>
+            </div>
           </Field>
           <Field label="Circuit type">
-            <input className="input" value={form.circuit_type} onChange={e => set('circuit_type', e.target.value)} placeholder="e.g. Fiber" />
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>Circuit type</label>
+              <select className="input select" value={form.circuit_type} onChange={e => set('circuit_type', e.target.value)}>
+                <option value="">Select circuit type</option>
+              <option key='Dedicated'>Dedicated</option>
+              <option key='Shared'>Shared</option>
+              <option key='Burstable'>Burstable</option>
+              <option key='Always-on'>Always-on</option>
+              <option key='On-demand'>On-demand</option>
+              <option key='Others'>Others</option>
+              </select>
+            </div>
           </Field>
           <Field label="Interface">
-            <input className="input" value={form.interface} onChange={e => set('interface', e.target.value)} placeholder="e.g. Fiber" />
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>Interface</label>
+              <select className="input select" value={form.interface} onChange={e => set('interface', e.target.value)}>
+                <option value="">Select interface</option>
+              <option key='Ethernet (RJ45)'>Ethernet (RJ45)</option>
+              <option key='SFP / Fiber'>SFP / Fiber</option>
+              <option key='SFP+ (10G)'>SFP+ (10G)</option>
+              <option key='QSFP (40G/100G)'>QSFP (40G/100G)</option>
+              <option key='Coax'>Coax</option>
+              <option key='Wireless'>Wireless</option>
+              <option key='Serial'>Serial</option>
+              <option key='Others'>Others</option>
+              </select>
+            </div>
           </Field>
           <Field label="Max speed (up/down)">
             <input className="input" value={form.max_speed} onChange={e => set('max_speed', e.target.value)} placeholder="e.g. 300/300" />
@@ -170,13 +200,7 @@ export default function NewCircuitPage() {
           <Field label="Public subnet">
             <input className="input" value={form.public_subnet} onChange={e => set('public_subnet', e.target.value)} placeholder="e.g. 119.110.198.116" />
           </Field>
-          <Field label="Pingable from IDC">
-            <select className="input select" value={form.pingable} onChange={e => set('pingable', e.target.value)}>
-              <option value="">Unknown</option>
-              <option>Yes</option>
-              <option>No</option>
-            </select>
-          </Field>
+          
         </Section>
 
         <Section title="Commercial">

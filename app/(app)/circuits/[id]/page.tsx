@@ -146,9 +146,46 @@ export default function CircuitDetailPage({ params }: { params: Promise<{ id: st
                   <option key="Others">Others</option>
                 </select>
               </div>
-              <EditField label="Technology" field="technology" />
-              <EditField label="Circuit type" field="circuit_type" />
-              <EditField label="Interface" field="interface" />
+                            <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>Technology</label>
+                <select className="input select" value={form.technology || ''} onChange={e => setForm((f: Circuit) => ({ ...f, technology: e.target.value }))}>
+                  <option value="">Select technology</option>
+                <option key='Fiber'>Fiber</option>
+                <option key='Copper / xDSL'>Copper / xDSL</option>
+                <option key='Coax / Cable'>Coax / Cable</option>
+                <option key='Wireless / Radio'>Wireless / Radio</option>
+                <option key='Satellite'>Satellite</option>
+                <option key='4G/5G Mobile'>4G/5G Mobile</option>
+                <option key='SD-WAN Overlay'>SD-WAN Overlay</option>
+                <option key='Others'>Others</option>
+                </select>
+              </div>
+                            <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>Circuit type</label>
+                <select className="input select" value={form.circuit_type || ''} onChange={e => setForm((f: Circuit) => ({ ...f, circuit_type: e.target.value }))}>
+                  <option value="">Select circuit type</option>
+                <option key='Dedicated'>Dedicated</option>
+                <option key='Shared'>Shared</option>
+                <option key='Burstable'>Burstable</option>
+                <option key='Always-on'>Always-on</option>
+                <option key='On-demand'>On-demand</option>
+                <option key='Others'>Others</option>
+                </select>
+              </div>
+                            <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>Interface</label>
+                <select className="input select" value={form.interface || ''} onChange={e => setForm((f: Circuit) => ({ ...f, interface: e.target.value }))}>
+                  <option value="">Select interface</option>
+                <option key='Ethernet (RJ45)'>Ethernet (RJ45)</option>
+                <option key='SFP / Fiber'>SFP / Fiber</option>
+                <option key='SFP+ (10G)'>SFP+ (10G)</option>
+                <option key='QSFP (40G/100G)'>QSFP (40G/100G)</option>
+                <option key='Coax'>Coax</option>
+                <option key='Wireless'>Wireless</option>
+                <option key='Serial'>Serial</option>
+                <option key='Others'>Others</option>
+                </select>
+              </div>
               <EditField label="Max speed" field="max_speed" />
               <EditField label="Guaranteed speed" field="guaranteed_speed" />
             </Section>
