@@ -72,6 +72,19 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
     eol: devices.filter(d => d.device_type === t && d.lifecycle_status === 'EOL / EOS').length,
   })).sort((a, b) => b.count - a.count)
 
+  function formatSpeed(speed: string) {
+    if (!speed || speed === 'nan') return '—'
+    const parts = speed.split('/')
+    if (parts.length === 2) {
+      const clean = (s: string) => s.replace(/\s*(guaranteed|not guaranteed|guranteed|shared)\s*/gi, '').trim()
+      const up = clean(parts[0])
+      const down = clean(parts[1])
+      if (up === down) return up
+      return `${up} / ${down}`
+    }
+    return speed
+  }
+
   const mainCircuits = circuits.filter(c => c.usage?.toLowerCase() === 'main')
   const backupCircuits = circuits.filter(c => c.usage?.toLowerCase() === 'backup')
   const otherCircuits = circuits.filter(c => !['main','backup'].includes(c.usage?.toLowerCase()))
@@ -269,7 +282,7 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
                             <td style={{ fontWeight: '500' }}>{c.isp}</td>
                             <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{c.circuit_id || '—'}</td>
                             <td><span className="badge" style={{ background: '#ede9fe', color: '#5b21b6' }}>{c.technology && c.technology !== 'nan' ? c.technology : '—'}</span></td>
-                            <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{c.max_speed || '—'}</td>
+                            <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{formatSpeed(c.max_speed)}</td>
                             <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{c.public_subnet && c.public_subnet !== '-' && c.public_subnet !== 'nan' ? c.public_subnet : '—'}</td>
                             <td style={{ fontSize: '12px' }}>{c.cost_month ? `${c.currency || 'THB'} ${parseFloat(c.cost_month).toLocaleString()}` : '—'}</td>
                             

@@ -42,6 +42,19 @@ export default function CircuitDetailPage({ params }: { params: Promise<{ id: st
   if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Loading...</div>
   if (!circuit) return <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Circuit not found</div>
 
+  const formatSpeed = (speed: any) => {
+    if (!speed || speed === 'nan') return '—'
+    const parts = String(speed).split('/')
+    if (parts.length === 2) {
+      const clean = (s: string) => s.replace(/\s*(guaranteed|not guaranteed|guranteed|shared)\s*/gi, '').trim()
+      const up = clean(parts[0])
+      const down = clean(parts[1])
+      if (up === down) return up
+      return `${up} / ${down}`
+    }
+    return speed
+  }
+
   const formatCost = (cost: any, currency: string) => {
     if (!cost) return '—'
     return `${currency || 'THB'} ${parseFloat(cost).toLocaleString()}`
@@ -79,7 +92,7 @@ export default function CircuitDetailPage({ params }: { params: Promise<{ id: st
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: '700', color: '#111827', margin: '0 0 6px' }}>
-            {circuit.circuit_id || 'Unnamed circuit'}
+            {circuit.circuit_id && circuit.circuit_id !== 'nan' ? circuit.circuit_id : circuit.isp ? `${circuit.isp} — ${circuit.site || circuit.site_name_raw}` : 'Unnamed circuit'}
           </h1>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '13px', fontWeight: '500', color: '#374151' }}>{circuit.isp}</span>
@@ -218,8 +231,8 @@ export default function CircuitDetailPage({ params }: { params: Promise<{ id: st
               <Field label="Technology" value={circuit.technology} />
               <Field label="Circuit type" value={circuit.circuit_type} />
               <Field label="Interface" value={circuit.interface} />
-              <Field label="Max speed" value={circuit.max_speed} />
-              <Field label="Guaranteed speed" value={circuit.guaranteed_speed} />
+              <Field label="Max speed" value={formatSpeed(circuit.max_speed)} />
+              <Field label="Guaranteed speed" value={formatSpeed(circuit.guaranteed_speed)} />
             </Section>
             <Section title="Location">
               <Field label="Site" value={circuit.site || circuit.site_name_raw} />

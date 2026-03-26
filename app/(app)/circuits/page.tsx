@@ -66,6 +66,20 @@ export default function CircuitsPage() {
   const mainCount = circuits.filter(c => ['main','primary internet','mpls primary'].includes(c.usage?.toLowerCase())).length
   const backupCount = circuits.filter(c => ['backup','backup internet','mpls backup'].includes(c.usage?.toLowerCase())).length
 
+  function formatSpeed(speed: string) {
+    if (!speed || speed === 'nan') return '—'
+    // Convert "200Mb Guaranteed/200Mb Guaranteed" to "200/200 Mb"
+    const parts = speed.split('/')
+    if (parts.length === 2) {
+      const clean = (s: string) => s.replace(/\s*(guaranteed|not guaranteed|guranteed|shared)\s*/gi, '').trim()
+      const up = clean(parts[0])
+      const down = clean(parts[1])
+      if (up === down) return up
+      return `${up} / ${down}`
+    }
+    return speed
+  }
+
   function formatCost(cost: string, currency: string) {
     if (!cost) return '—'
     return `${currency || 'THB'} ${parseFloat(cost).toLocaleString()}`
@@ -158,7 +172,7 @@ export default function CircuitsPage() {
                     <td style={{ padding: '10px 14px', fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap' }}>{c.country}</td>
                     <td style={{ padding: '10px 14px', fontWeight: '500', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={c.isp}>{c.isp}</td>
                     <td style={{ padding: '10px 14px', maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}><UsageBadge usage={c.usage} /></td>
-                    <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={c.max_speed}>{c.max_speed || '—'}</td>
+                    <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={c.max_speed}>{formatSpeed(c.max_speed)}</td>
                     <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.public_subnet && c.public_subnet !== '-' && c.public_subnet !== 'nan' ? c.public_subnet : '—'}</td>
                     <td style={{ padding: '10px 14px', fontSize: '12px', whiteSpace: 'nowrap' }}>{formatCost(c.cost_month, c.currency)}</td>
                     <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
