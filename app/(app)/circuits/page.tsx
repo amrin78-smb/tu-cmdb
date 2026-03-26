@@ -22,7 +22,7 @@ function UsageBadge({ usage }: { usage: string }) {
     'Backup':           { bg: '#f3f4f6', color: '#6b7280' },
   }
   const c = colors[usage] || { bg: '#f3f4f6', color: '#6b7280' }
-  return <span className="badge" style={{ background: c.bg, color: c.color, whiteSpace: 'nowrap' }}>{usage || '—'}</span>
+  return <span className="badge" style={{ background: c.bg, color: c.color, }}>{usage || '—'}</span>
 }
 
 export default function CircuitsPage() {
@@ -137,31 +137,31 @@ export default function CircuitsPage() {
             <table style={{ fontSize: '13px', borderCollapse: 'collapse', width: '100%' }}>
               <thead>
                 <tr>
-                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap' }}>Site</th>
-                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap' }}>Country</th>
-                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap' }}>ISP</th>
-                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap' }}>Usage</th>
-                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap' }}>Max speed</th>
-                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap' }}>Public subnet</th>
-                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap' }}>Cost/month</th>
-                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap' }}>Actions</th>
+                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', }}>Site</th>
+                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', }}>Country</th>
+                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', }}>ISP</th>
+                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', }}>Usage</th>
+                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', }}>Max speed</th>
+                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', }}>Public subnet</th>
+                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', }}>Cost/month</th>
+                  <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {circuits.map(c => (
                   <tr key={c.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                    <td style={{ padding: '10px 14px', fontWeight: '500', color: '#111827', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '10px 14px', fontWeight: '500', color: '#111827', }}>
                       <Link href={`/circuits/${c.id}`} style={{ color: '#111827', textDecoration: 'none' }}>
                         {c.site || c.site_name_raw}
                       </Link>
                     </td>
-                    <td style={{ padding: '10px 14px', fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap' }}>{c.country}</td>
-                    <td style={{ padding: '10px 14px', fontWeight: '500', whiteSpace: 'nowrap' }}>{c.isp}</td>
-                    <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}><UsageBadge usage={c.usage} /></td>
-                    <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', whiteSpace: 'nowrap' }}>{c.max_speed || '—'}</td>
-                    <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', whiteSpace: 'nowrap' }}>{c.public_subnet && c.public_subnet !== '-' && c.public_subnet !== 'nan' ? c.public_subnet : '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: '12px', whiteSpace: 'nowrap' }}>{formatCost(c.cost_month, c.currency)}</td>
-                    <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '10px 14px', fontSize: '12px', color: '#6b7280', }}>{c.country}</td>
+                    <td style={{ padding: '10px 14px', fontWeight: '500', }}>{c.isp}</td>
+                    <td style={{ padding: '10px 14px', }}><UsageBadge usage={c.usage} /></td>
+                    <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', }}>{c.max_speed || '—'}</td>
+                    <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', }}>{c.public_subnet && c.public_subnet !== '-' && c.public_subnet !== 'nan' ? c.public_subnet : '—'}</td>
+                    <td style={{ padding: '10px 14px', fontSize: '12px', }}>{formatCost(c.cost_month, c.currency)}</td>
+                    <td style={{ padding: '10px 14px', }}>
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <Link href={`/circuits/${c.id}`}>
                           <button style={{ padding: '4px 10px', fontSize: '12px', border: '1px solid #d1d5db', borderRadius: '5px', background: 'white', cursor: 'pointer' }}>View</button>
