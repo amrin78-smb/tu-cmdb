@@ -125,7 +125,18 @@ export default function NewCircuitPage() {
             <input className="input" value={form.circuit_id} onChange={e => set('circuit_id', e.target.value)} placeholder="e.g. DI40443" />
           </Field>
           <Field label="Product">
-            <input className="input" value={form.product} onChange={e => set('product', e.target.value)} placeholder="e.g. Corporate Internet" />
+            <select className="input select" value={form.product} onChange={e => set('product', e.target.value)}>
+              <option value="">Select product</option>
+                  <option>Corporate Internet / DIA</option>
+                  <option>IPVPN / MPLS</option>
+                  <option>L2VPN / Private Link</option>
+                  <option>SME Internet FTTx</option>
+                  <option>Home Broadband FTTx</option>
+                  <option>Satellite</option>
+                  <option>4G/5G Mobile</option>
+                  <option>Dark Fiber</option>
+                  <option>Others</option>
+            </select>
           </Field>
           <Field label="Technology">
             <select className="input select" value={form.technology} onChange={e => set('technology', e.target.value)}>
