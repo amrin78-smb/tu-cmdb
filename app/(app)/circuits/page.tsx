@@ -140,14 +140,14 @@ export default function CircuitsPage() {
             <table style={{ fontSize: '13px' }}>
               <thead>
                 <tr>
-                  <th>Site</th>
-                  <th>Country</th>
-                  <th>ISP</th>
-                  <th>Usage</th>
-                  <th>Max speed</th>
-                  <th>Public subnet</th>
-                  <th>Cost/month</th>
-                  <th>Actions</th>
+                  <th style={{ minWidth: '110px' }}>Site</th>
+                  <th style={{ width: '80px' }}>Country</th>
+                  <th style={{ minWidth: '100px' }}>ISP</th>
+                  <th style={{ width: '90px' }}>Usage</th>
+                  <th style={{ minWidth: '140px' }}>Max speed</th>
+                  <th style={{ minWidth: '120px' }}>Public subnet</th>
+                  <th style={{ width: '100px' }}>Cost/month</th>
+                  <th style={{ width: '110px', position: 'sticky', right: 0, background: '#f9fafb' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
