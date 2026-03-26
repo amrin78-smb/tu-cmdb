@@ -223,7 +223,7 @@ export default function DevicesPage() {
       </div>
 
       {/* Filters */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' as const, alignItems: 'center', flexWrap: 'wrap' }}>
         <input className="input" style={{ flex: '1', minWidth: '200px', maxWidth: '320px' }} placeholder="Search name, IP, model, serial..." value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} />
         <select className="select" value={region} onChange={e => { setRegion(e.target.value); setSite(''); setPage(1) }}>
           <option value="">All regions</option>
