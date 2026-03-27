@@ -101,28 +101,35 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f8f8' }}>
-      <div style={{ width: '220px', background: navy, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-        <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ marginBottom: '14px' }}>
-            {settings.app_logo_url ? (
-              <img src={settings.app_logo_url} alt="logo" style={{ width: '100%', maxHeight: '48px', objectFit: 'contain', objectPosition: 'left', marginBottom: '8px' }} />
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                <div style={{ width: '32px', height: '32px', background: primary, borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
-                  </svg>
-                </div>
-                <div>
-                  <div style={{ color: 'white', fontSize: '15px', fontWeight: '700' }}>{settings.app_name || 'NetVault'}</div>
-                  <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px' }}>{settings.app_subtitle || 'Network Intelligence Platform'}</div>
-                </div>
+
+      {/* Fixed sidebar */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, bottom: 0,
+        width: '220px', background: navy,
+        display: 'flex', flexDirection: 'column',
+        zIndex: 100
+      }}>
+        {/* Logo */}
+        <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+          {settings.app_logo_url ? (
+            <img src={settings.app_logo_url} alt="logo" style={{ width: '100%', maxHeight: '48px', objectFit: 'contain', objectPosition: 'left' }} />
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: '32px', height: '32px', background: primary, borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+                </svg>
               </div>
-            )}
-          </div>
+              <div>
+                <div style={{ color: 'white', fontSize: '15px', fontWeight: '700' }}>{settings.app_name || 'NetVault'}</div>
+                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px' }}>{settings.app_subtitle || 'Network Intelligence Platform'}</div>
+              </div>
+            </div>
+          )}
         </div>
 
-        <nav style={{ flex: 1, padding: '12px 8px' }}>
+        {/* Nav items - scrollable if needed */}
+        <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto' }}>
           {navItems.map(item => {
             if (item.adminOnly && user?.role !== 'admin') return null
             if ((item as any).hideForSiteAdmin && user?.role === 'site_admin') return null
@@ -143,7 +150,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        <div style={{ padding: '12px 8px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        {/* User card - always pinned to bottom */}
+        <div style={{ padding: '12px 8px', borderTop: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
           <div style={{ padding: '10px 12px', borderRadius: '7px', background: 'rgba(255,255,255,0.05)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', color: 'white', flexShrink: 0 }}>
@@ -166,8 +174,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      <div style={{ flex: 1, overflow: 'auto' }}>{children}</div>
+      {/* Main content - offset by sidebar width */}
+      <div style={{ marginLeft: '220px', flex: 1, overflow: 'auto' }}>{children}</div>
 
+      {/* Change Password Modal */}
       {showPwModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: 'white', borderRadius: '12px', padding: '28px', width: '100%', maxWidth: '380px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
