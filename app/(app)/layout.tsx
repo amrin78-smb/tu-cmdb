@@ -3,6 +3,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import GlobalSearch from '@/components/GlobalSearch'
 
 type Settings = {
   app_name: string; app_subtitle: string; app_logo_url: string
@@ -25,13 +26,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const user = session?.user as { role?: string; name?: string } | undefined
   const [settings, setSettings] = useState<Settings>({
-    app_name: 'TU CMDB',
-    app_subtitle: 'Thai Union Group',
-    app_logo_url: '',
-    app_primary_color: '#C8102E',
-    app_navy_color: '#1a2744',
+    app_name: 'TU CMDB', app_subtitle: 'Thai Union Group',
+    app_logo_url: '', app_primary_color: '#C8102E', app_navy_color: '#1a2744',
   })
-
   const [showPwModal, setShowPwModal] = useState(false)
   const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm_password: '' })
   const [pwError, setPwError] = useState('')
@@ -58,9 +55,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   function openPwModal() {
     setPwForm({ current_password: '', new_password: '', confirm_password: '' })
-    setPwError('')
-    setPwSuccess(false)
-    setShowPwModal(true)
+    setPwError(''); setPwSuccess(false); setShowPwModal(true)
   }
 
   async function changePassword() {
@@ -81,12 +76,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     })
     const data = await res.json()
     setPwSaving(false)
-    if (res.ok) {
-      setPwSuccess(true)
-      setTimeout(() => setShowPwModal(false), 1500)
-    } else {
-      setPwError(data.error || 'Failed to change password')
-    }
+    if (res.ok) { setPwSuccess(true); setTimeout(() => setShowPwModal(false), 1500) }
+    else setPwError(data.error || 'Failed to change password')
   }
 
   if (status === 'loading') return (
@@ -101,14 +92,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f8f8' }}>
-
       {/* Fixed sidebar */}
-      <div style={{
-        position: 'fixed', top: 0, left: 0, bottom: 0,
-        width: '220px', background: navy,
-        display: 'flex', flexDirection: 'column',
-        zIndex: 100
-      }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: '220px', background: navy, display: 'flex', flexDirection: 'column', zIndex: 100 }}>
         {/* Logo */}
         <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
           {settings.app_logo_url ? (
@@ -128,8 +113,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           )}
         </div>
 
-        {/* Nav items - scrollable if needed */}
-        <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto' }}>
+        {/* Global search */}
+        <div style={{ padding: '10px 10px 4px', flexShrink: 0 }}>
+          <GlobalSearch />
+        </div>
+
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: '8px 8px', overflowY: 'auto' }}>
           {navItems.map(item => {
             if (item.adminOnly && user?.role !== 'admin') return null
             if ((item as any).hideForSiteAdmin && user?.role === 'site_admin') return null
@@ -150,7 +140,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* User card - always pinned to bottom */}
+        {/* User card - pinned to bottom */}
         <div style={{ padding: '12px 8px', borderTop: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
           <div style={{ padding: '10px 12px', borderRadius: '7px', background: 'rgba(255,255,255,0.05)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -174,7 +164,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {/* Main content - offset by sidebar width */}
+      {/* Main content offset by sidebar */}
       <div style={{ marginLeft: '220px', flex: 1, overflow: 'auto' }}>{children}</div>
 
       {/* Change Password Modal */}
@@ -196,28 +186,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 ].map(f => (
                   <div key={f.field} style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: '#374151', marginBottom: '5px' }}>{f.label}</label>
-                    <input
-                      type="password"
-                      className="input"
+                    <input type="password" className="input"
                       value={pwForm[f.field as keyof typeof pwForm]}
                       onChange={e => setPwForm(p => ({ ...p, [f.field]: e.target.value }))}
                       onKeyDown={e => e.key === 'Enter' && changePassword()}
-                      style={{ width: '100%' }}
-                    />
+                      style={{ width: '100%' }} />
                   </div>
                 ))}
                 {pwError && (
-                  <div style={{ background: '#fee2e2', color: '#991b1b', padding: '10px 12px', borderRadius: '6px', fontSize: '13px', marginBottom: '14px' }}>
-                    {pwError}
-                  </div>
+                  <div style={{ background: '#fee2e2', color: '#991b1b', padding: '10px 12px', borderRadius: '6px', fontSize: '13px', marginBottom: '14px' }}>{pwError}</div>
                 )}
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button className="btn-primary" onClick={changePassword} disabled={pwSaving} style={{ flex: 1 }}>
                     {pwSaving ? 'Saving...' : 'Change password'}
                   </button>
-                  <button className="btn-secondary" onClick={() => setShowPwModal(false)} style={{ flex: 1 }}>
-                    Cancel
-                  </button>
+                  <button className="btn-secondary" onClick={() => setShowPwModal(false)} style={{ flex: 1 }}>Cancel</button>
                 </div>
               </>
             )}
