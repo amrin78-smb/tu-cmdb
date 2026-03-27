@@ -388,7 +388,7 @@ export default function DevicesPage() {
         ) : devices.length === 0 ? (
           <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>No devices found</div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
+          <div className="table-container">
             <table>
               <thead>
                 <tr>
