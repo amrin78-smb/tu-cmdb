@@ -17,6 +17,87 @@ function LifecycleBadge({ status }: { status: string }) {
   return <span className="badge badge-unknown">Unknown</span>
 }
 
+function timeAgo(d: string) {
+  const diff = Date.now() - new Date(d).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(hrs / 24)
+  if (days < 30) return `${days}d ago`
+  return new Date(d).toLocaleDateString()
+}
+
+function formatDateTime(d: string) {
+  return new Date(d).toLocaleString(undefined, {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  })
+}
+
+function parseLogEntry(log: Log): { label: string; detail: string | null; dotColor: string } {
+  const field = log.field_name
+
+  if (field === 'created') return { label: 'Device created', detail: null, dotColor: '#166534' }
+  if (field === 'deleted') return { label: 'Device deleted', detail: null, dotColor: '#991b1b' }
+
+  if (field === 'updated') {
+    // Try to parse old/new value as JSON for structured diff
+    try {
+      const oldObj = JSON.parse(log.old_value || '{}')
+      const newObj = JSON.parse(log.new_value || '{}')
+      const changed: string[] = []
+      const fieldLabels: Record<string, string> = {
+        name: 'Name', brand: 'Brand', model: 'Model', device_type: 'Type',
+        ip_address: 'IP address', site: 'Site', device_status: 'Device status',
+        lifecycle_status: 'Lifecycle', serial_number: 'Serial', mgmt_protocol: 'Mgmt protocol',
+        mgmt_url: 'Mgmt URL', location_detail: 'Location', risk_score: 'Risk score',
+        remark: 'Remark', cost: 'Cost', purchase_date: 'Purchase date',
+        purchase_vendor: 'Purchase vendor', ma_vendor: 'MA vendor'
+      }
+      for (const key of Object.keys(newObj)) {
+        const oldVal = oldObj[key]
+        const newVal = newObj[key]
+        if (String(oldVal || '') !== String(newVal || '') && fieldLabels[key]) {
+          const label = fieldLabels[key]
+          const from = oldVal ? `"${oldVal}"` : 'empty'
+          const to = newVal ? `"${newVal}"` : 'empty'
+          changed.push(`${label}: ${from} → ${to}`)
+        }
+      }
+      return {
+        label: 'Device updated',
+        detail: changed.length > 0 ? changed.join('\n') : null,
+        dotColor: '#075985'
+      }
+    } catch {
+      return { label: 'Device updated', detail: null, dotColor: '#075985' }
+    }
+  }
+
+  // Bulk field changes
+  const bulkLabels: Record<string, string> = {
+    bulk_device_status: 'Device status',
+    bulk_lifecycle_status: 'Lifecycle status',
+    bulk_site_id: 'Site',
+  }
+  if (bulkLabels[field]) {
+    const label = bulkLabels[field]
+    const to = log.new_value ? `"${log.new_value}"` : 'unknown'
+    return { label: `${label} changed (bulk)`, detail: `Set to ${to}`, dotColor: '#6d28d9' }
+  }
+
+  // Fallback for any other field
+  const from = log.old_value ? `"${log.old_value}"` : 'empty'
+  const to = log.new_value ? `"${log.new_value}"` : 'empty'
+  return {
+    label: `${field} changed`,
+    detail: `${from} → ${to}`,
+    dotColor: '#075985'
+  }
+}
+
 export default function DeviceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session } = useSession()
   const user = session?.user as { role?: string } | undefined
@@ -41,15 +122,6 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
 
   if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Loading...</div>
   if (!device) return <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Device not found</div>
-
-  function timeAgo(d: string) {
-    const diff = Date.now() - new Date(d).getTime()
-    const mins = Math.floor(diff / 60000)
-    if (mins < 60) return `${mins}m ago`
-    const hrs = Math.floor(mins / 60)
-    if (hrs < 24) return `${hrs}h ago`
-    return `${Math.floor(hrs / 24)}d ago`
-  }
 
   const Field = ({ label, value }: { label: string; value: any }) => (
     <div style={{ marginBottom: '12px' }}>
@@ -126,23 +198,49 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
             <div style={{ gridColumn: '1 / -1' }}><Field label="Remark" value={device.remark} /></div>
           </Section>
 
-          {/* Change history */}
+          {/* Change history timeline */}
           <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', padding: '20px 24px' }}>
-            <h2 style={{ fontSize: '13px', fontWeight: '600', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid #f3f4f6' }}>Change history</h2>
+            <h2 style={{ fontSize: '13px', fontWeight: '600', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid #f3f4f6' }}>
+              Change history {logs.length > 0 && <span style={{ fontWeight: '400', color: '#9ca3af', textTransform: 'none', letterSpacing: 0 }}>({logs.length})</span>}
+            </h2>
+
             {logs.length === 0 ? (
               <div style={{ fontSize: '13px', color: '#9ca3af' }}>No changes recorded yet</div>
-            ) : logs.map((log, i) => (
-              <div key={i} style={{ display: 'flex', gap: '10px', paddingBottom: '10px', marginBottom: '10px', borderBottom: i < logs.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0, marginTop: '5px', background: log.field_name === 'created' ? '#166534' : log.field_name === 'deleted' ? '#991b1b' : '#075985' }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '12px', color: '#374151' }}>
-                    <span style={{ fontWeight: '500' }}>{log.changed_by_name || 'System'}</span>
-                    {' '}{log.field_name} this device
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>{timeAgo(log.changed_at)}</div>
-                </div>
+            ) : (
+              <div style={{ position: 'relative' }}>
+                {/* Timeline line */}
+                <div style={{ position: 'absolute', left: '7px', top: '8px', bottom: '8px', width: '1px', background: '#e5e7eb' }} />
+
+                {logs.map((log, i) => {
+                  const { label, detail, dotColor } = parseLogEntry(log)
+                  return (
+                    <div key={i} style={{ display: 'flex', gap: '14px', paddingBottom: i < logs.length - 1 ? '14px' : 0, marginBottom: i < logs.length - 1 ? '14px' : 0, position: 'relative' }}>
+                      {/* Dot */}
+                      <div style={{ width: '15px', height: '15px', borderRadius: '50%', flexShrink: 0, marginTop: '2px', background: dotColor, border: '2px solid white', boxShadow: `0 0 0 1px ${dotColor}`, zIndex: 1 }} />
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: '500', color: '#111827' }}>{label}</div>
+                          <div style={{ fontSize: '11px', color: '#9ca3af', flexShrink: 0 }} title={formatDateTime(log.changed_at)}>
+                            {timeAgo(log.changed_at)}
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '1px' }}>
+                          {log.changed_by_name || 'System'}
+                        </div>
+                        {detail && (
+                          <div style={{ marginTop: '6px', background: '#f9fafb', borderRadius: '6px', padding: '8px 10px', border: '1px solid #f3f4f6' }}>
+                            {detail.split('\n').map((line, j) => (
+                              <div key={j} style={{ fontSize: '12px', color: '#374151', fontFamily: 'monospace', lineHeight: '1.6' }}>{line}</div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
