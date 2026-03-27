@@ -60,7 +60,7 @@ export default function GlobalSearch() {
   const statusBg: Record<string, string> = { 'Active': '#dcfce7', 'Decommed': '#f3f4f6', 'Spare': '#fef3c7', 'Faulty, Replaced': '#ffedd5' }
 
   return (
-    <div style={{ position: 'relative', width: '280px' }}>
+    <div style={{ position: 'relative', width: '100%' }}>
       <div style={{ position: 'relative' }}>
         <svg style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input
