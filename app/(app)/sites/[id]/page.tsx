@@ -292,26 +292,7 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
                 </button>
               </div>
             )}
-            {isAdmin && selected.size > 0 && (
-              <div style={{ background: '#1a2744', borderRadius: '8px', padding: '10px 16px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '13px', color: 'white', fontWeight: '500' }}>{selected.size} device{selected.size > 1 ? 's' : ''} selected</span>
-                <select value={bulkField} onChange={e => { setBulkField(e.target.value); setBulkValue('') }} style={{ padding: '5px 10px', borderRadius: '5px', fontSize: '12px', border: 'none', color: '#111827', background: 'rgba(255,255,255,0.9)' }}>
-                  <option value="device_status">Device status</option>
-                  <option value="lifecycle_status">Lifecycle status</option>
-                </select>
-                <select value={bulkValue} onChange={e => setBulkValue(e.target.value)} style={{ padding: '5px 10px', borderRadius: '5px', fontSize: '12px', border: 'none', color: '#111827', background: 'rgba(255,255,255,0.9)' }}>
-                  <option value="">Set value...</option>
-                  {bulkField === 'device_status' && ['Active','Decommed','Faulty, Replaced','Spare'].map(s => <option key={s}>{s}</option>)}
-                  {bulkField === 'lifecycle_status' && ['Active, Supported','EOL / EOS','Unknown'].map(s => <option key={s}>{s}</option>)}
-                </select>
-                <button onClick={bulkUpdate} disabled={!bulkValue || bulkLoading} style={{ padding: '5px 14px', background: '#C8102E', color: 'white', border: 'none', borderRadius: '5px', fontSize: '12px', cursor: 'pointer', fontWeight: '500' }}>
-                  {bulkLoading ? 'Updating...' : 'Apply'}
-                </button>
-                <button onClick={() => setSelected(new Set())} style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '5px', fontSize: '12px', cursor: 'pointer' }}>
-                  Cancel
-                </button>
-              </div>
-            )}
+
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
               <select className="select" style={{ width: "auto", minWidth: "130px" }} value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
                 <option value="">All types</option>
