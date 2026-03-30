@@ -33,8 +33,11 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
   const { confirm } = useConfirm()
 
 
+  const [siteId, setSiteId] = useState('')
+
   useEffect(() => {
     params.then(async p => {
+      setSiteId(p.id)
       const [siteData, allCircuits] = await Promise.all([
         fetch(`/api/sites/${p.id}`).then(r => r.json()),
         fetch(`/api/circuits`).then(r => r.json()),
@@ -304,7 +307,7 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
                     {filtered.map((d: any) => (
                       <tr key={d.id} style={{ background: selected.has(d.id) ? '#fef9f9' : undefined }}>
                         {isAdmin && <td><input type="checkbox" checked={selected.has(d.id)} onChange={() => toggleSelect(d.id)} /></td>}
-                        <td style={{ fontWeight: '500' }}><Link href={`/devices/${d.id}`} style={{ color: '#111827', textDecoration: 'none' }}>{d.name || '—'}</Link></td>
+                        <td style={{ fontWeight: '500' }}><Link href={`/devices/${d.id}?from=site&siteId=${siteId}&siteName=${encodeURIComponent(site.site)}`} style={{ color: '#111827', textDecoration: 'none' }}>{d.name || '—'}</Link></td>
                         <td>{d.device_type}</td>
                         <td>{d.brand} {d.model}</td>
                         <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{d.ip_address || '—'}</td>

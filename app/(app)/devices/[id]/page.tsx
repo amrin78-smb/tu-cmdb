@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import Breadcrumb from '@/components/Breadcrumb'
 import { StatusBadge, LifecycleBadge } from '@/components/Badges'
 
@@ -97,6 +98,10 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
   const [logs, setLogs] = useState<Log[]>([])
   const [loading, setLoading] = useState(true)
   const [id, setId] = useState('')
+  const searchParams = useSearchParams()
+  const fromSite = searchParams.get('from') === 'site'
+  const fromSiteId = searchParams.get('siteId') || ''
+  const fromSiteName = searchParams.get('siteName') || 'Site'
 
   useEffect(() => {
     params.then(async p => {
@@ -132,10 +137,18 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
 
   return (
     <div style={{ padding: '24px 28px', maxWidth: '960px' }}>
-      <Breadcrumb crumbs={[
-        { label: 'Devices', href: '/devices' },
-        { label: device.name || 'Device detail' },
-      ]} />
+      <Breadcrumb crumbs={
+        fromSite
+          ? [
+              { label: 'Sites', href: '/sites' },
+              { label: fromSiteName, href: `/sites/${fromSiteId}` },
+              { label: device.name || 'Device detail' },
+            ]
+          : [
+              { label: 'Devices', href: '/devices' },
+              { label: device.name || 'Device detail' },
+            ]
+      } />
 
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
@@ -147,7 +160,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
         {isAdmin && (
-          <Link href={`/devices/${id}/edit`}>
+          <Link href={`/devices/${id}/edit${fromSite ? `?from=site&siteId=${fromSiteId}&siteName=${encodeURIComponent(fromSiteName)}` : ''}`}>
             <button className="btn-primary">Edit device</button>
           </Link>
         )}
