@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import Breadcrumb from '@/components/Breadcrumb'
+import { useToast, useConfirm } from '@/app/providers'
+import { useToast, useConfirm } from '@/app/providers'
 
 type SiteData = {
   site: { id: string; site: string; code: string; country: string; region: string }
@@ -33,6 +35,13 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
   const [editingSite, setEditingSite] = useState(false)
   const [siteForm, setSiteForm] = useState({ name: '', code: '' })
   const [savingSite, setSavingSite] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkField, setBulkField] = useState('device_status')
+  const [bulkValue, setBulkValue] = useState('')
+  const [bulkLoading, setBulkLoading] = useState(false)
+  const { showToast } = useToast()
+  const { confirm } = useConfirm()
+
 
   useEffect(() => {
     params.then(async p => {
@@ -89,6 +98,38 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
   const mainCircuits = circuits.filter(c => c.usage?.toLowerCase() === 'main')
   const backupCircuits = circuits.filter(c => c.usage?.toLowerCase() === 'backup')
   const otherCircuits = circuits.filter(c => !['main','backup'].includes(c.usage?.toLowerCase()))
+
+  function toggleSelect(id: string) {
+    setSelected(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next })
+  }
+
+  function toggleAll() {
+    const ids = filtered.map((d: any) => d.id)
+    if (selected.size === ids.length) setSelected(new Set())
+    else setSelected(new Set(ids))
+  }
+
+  async function bulkUpdate() {
+    if (!selected.size || !bulkValue) return
+    setBulkLoading(true)
+    const res = await fetch('/api/devices/bulk', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: Array.from(selected), field: bulkField, value: bulkValue })
+    })
+    if (res.ok) {
+      showToast(`${selected.size} device${selected.size > 1 ? 's' : ''} updated`)
+      const siteData = await fetch(`/api/sites/${(site as any).id}`).then(r => r.json())
+      setData(siteData)
+    } else {
+      showToast('Failed to update devices', 'error')
+    }
+    setSelected(new Set())
+    setBulkValue('')
+    setBulkLoading(false)
+  }
+
+
 
   return (
     <div style={{ padding: '24px 28px' }}>
@@ -232,6 +273,46 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
             })}
           </div>
           <div>
+            {isAdmin && selected.size > 0 && (
+              <div style={{ background: '#1a2744', borderRadius: '8px', padding: '10px 16px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '13px', color: 'white', fontWeight: '500' }}>{selected.size} device{selected.size > 1 ? 's' : ''} selected</span>
+                <select value={bulkField} onChange={e => { setBulkField(e.target.value); setBulkValue('') }} style={{ padding: '5px 10px', borderRadius: '5px', fontSize: '12px', border: 'none', color: '#111827', background: 'rgba(255,255,255,0.9)' }}>
+                  <option value="device_status">Device status</option>
+                  <option value="lifecycle_status">Lifecycle status</option>
+                </select>
+                <select value={bulkValue} onChange={e => setBulkValue(e.target.value)} style={{ padding: '5px 10px', borderRadius: '5px', fontSize: '12px', border: 'none', color: '#111827', background: 'rgba(255,255,255,0.9)' }}>
+                  <option value="">Set value...</option>
+                  {bulkField === 'device_status' && ['Active','Decommed','Faulty, Replaced','Spare'].map(s => <option key={s}>{s}</option>)}
+                  {bulkField === 'lifecycle_status' && ['Active, Supported','EOL / EOS','Unknown'].map(s => <option key={s}>{s}</option>)}
+                </select>
+                <button onClick={bulkUpdate} disabled={!bulkValue || bulkLoading} style={{ padding: '5px 14px', background: '#C8102E', color: 'white', border: 'none', borderRadius: '5px', fontSize: '12px', cursor: 'pointer', fontWeight: '500' }}>
+                  {bulkLoading ? 'Updating...' : 'Apply'}
+                </button>
+                <button onClick={() => setSelected(new Set())} style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '5px', fontSize: '12px', cursor: 'pointer' }}>
+                  Cancel
+                </button>
+              </div>
+            )}
+            {isAdmin && selected.size > 0 && (
+              <div style={{ background: '#1a2744', borderRadius: '8px', padding: '10px 16px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '13px', color: 'white', fontWeight: '500' }}>{selected.size} device{selected.size > 1 ? 's' : ''} selected</span>
+                <select value={bulkField} onChange={e => { setBulkField(e.target.value); setBulkValue('') }} style={{ padding: '5px 10px', borderRadius: '5px', fontSize: '12px', border: 'none', color: '#111827', background: 'rgba(255,255,255,0.9)' }}>
+                  <option value="device_status">Device status</option>
+                  <option value="lifecycle_status">Lifecycle status</option>
+                </select>
+                <select value={bulkValue} onChange={e => setBulkValue(e.target.value)} style={{ padding: '5px 10px', borderRadius: '5px', fontSize: '12px', border: 'none', color: '#111827', background: 'rgba(255,255,255,0.9)' }}>
+                  <option value="">Set value...</option>
+                  {bulkField === 'device_status' && ['Active','Decommed','Faulty, Replaced','Spare'].map(s => <option key={s}>{s}</option>)}
+                  {bulkField === 'lifecycle_status' && ['Active, Supported','EOL / EOS','Unknown'].map(s => <option key={s}>{s}</option>)}
+                </select>
+                <button onClick={bulkUpdate} disabled={!bulkValue || bulkLoading} style={{ padding: '5px 14px', background: '#C8102E', color: 'white', border: 'none', borderRadius: '5px', fontSize: '12px', cursor: 'pointer', fontWeight: '500' }}>
+                  {bulkLoading ? 'Updating...' : 'Apply'}
+                </button>
+                <button onClick={() => setSelected(new Set())} style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '5px', fontSize: '12px', cursor: 'pointer' }}>
+                  Cancel
+                </button>
+              </div>
+            )}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
               <select className="select" style={{ width: "auto", minWidth: "130px" }} value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
                 <option value="">All types</option>
@@ -247,10 +328,11 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
             <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
               <div style={{ overflowX: 'auto' }}>
                 <table>
-                  <thead><tr><th>Name</th><th>Type</th><th>Brand / Model</th><th>IP</th><th>Lifecycle</th><th>Status</th>{isAdmin && <th>Actions</th>}</tr></thead>
+                  <thead><tr>{isAdmin && <th style={{ width: '40px' }}><input type="checkbox" checked={selected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>}<th>Name</th><th>Type</th><th>Brand / Model</th><th>IP</th><th>Lifecycle</th><th>Status</th>{isAdmin && <th>Actions</th>}</tr></thead>
                   <tbody>
                     {filtered.map((d: any) => (
-                      <tr key={d.id}>
+                      <tr key={d.id} style={{ background: selected.has(d.id) ? '#fef9f9' : undefined }}>
+                        {isAdmin && <td><input type="checkbox" checked={selected.has(d.id)} onChange={() => toggleSelect(d.id)} /></td>}
                         <td style={{ fontWeight: '500' }}><Link href={`/devices/${d.id}`} style={{ color: '#111827', textDecoration: 'none' }}>{d.name || '—'}</Link></td>
                         <td>{d.device_type}</td>
                         <td>{d.brand} {d.model}</td>
