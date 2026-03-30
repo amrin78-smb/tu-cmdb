@@ -41,7 +41,8 @@ export default function UsersPage() {
   }
 
   async function deleteUser(id: number, name: string) {
-    if (!confirm(`Delete user "${name}"?`)) return
+    const ok = await confirm({ title: 'Delete user', message: `Are you sure you want to delete "${name}"?`, confirmLabel: 'Delete', danger: true })
+    if (!ok) return
     await fetch(`/api/users/${id}`, { method: 'DELETE' })
     fetchUsers()
   }

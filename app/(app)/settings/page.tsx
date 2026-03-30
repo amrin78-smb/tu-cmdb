@@ -82,8 +82,11 @@ export default function SettingsPage() {
   }
 
   async function deleteUser(id: number, name: string) {
-    if (!confirm(`Delete user "${name}"?`)) return
-    await fetch(`/api/users/${id}`, { method: 'DELETE' })
+    const ok = await confirm({ title: 'Delete user', message: `Are you sure you want to delete user "${name}"?`, confirmLabel: 'Delete', danger: true })
+    if (!ok) return
+    const res = await fetch(`/api/users/${id}`, { method: 'DELETE' })
+    if (res.ok) showToast(`User "${name}" deleted`)
+    else showToast('Failed to delete user', 'error')
     fetchUsers()
   }
 
@@ -135,7 +138,8 @@ export default function SettingsPage() {
   }
 
   async function deleteSite(id: number, name: string) {
-    if (!confirm(`Delete site "${name}"?`)) return
+    const ok2 = await confirm({ title: 'Delete site', message: `Are you sure you want to delete site "${name}"?`, confirmLabel: 'Delete', danger: true })
+    if (!ok2) return
     const res = await fetch('/api/sites/manage', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
