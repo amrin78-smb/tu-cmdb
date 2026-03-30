@@ -93,7 +93,7 @@ function parseLogEntry(log: Log): { label: string; detail: string | null; dotCol
 export default function DeviceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session } = useSession()
   const user = session?.user as { role?: string } | undefined
-  const isAdmin = user?.role === 'admin' || user?.role === 'site_admin'
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'site_admin'
   const [device, setDevice] = useState<Device | null>(null)
   const [logs, setLogs] = useState<Log[]>([])
   const [loading, setLoading] = useState(true)

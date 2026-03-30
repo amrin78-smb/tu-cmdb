@@ -31,7 +31,7 @@ export default function CircuitsPage() {
   const { confirm } = useConfirm()
   const { data: session } = useSession()
   const user = session?.user as { role?: string } | undefined
-  const isAdmin = user?.role === 'admin' || user?.role === 'site_admin'
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'site_admin'
   const [circuits, setCircuits] = useState<Circuit[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
