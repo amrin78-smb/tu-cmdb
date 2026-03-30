@@ -93,9 +93,12 @@ Write-Step "Starting NetVault service"
 # Kill any process still holding port 3000
 $portProc = Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue
 if ($portProc) {
-    Get-Process -Id $portProc.OwningProcess -ErrorAction SilentlyContinue | Stop-Process -Force
-    Start-Sleep -Seconds 2
-    Write-OK "Cleared port 3000"
+    $pid = $portProc.OwningProcess
+    if ($pid -and $pid -gt 0) {
+        Get-Process -Id $pid -ErrorAction SilentlyContinue | Stop-Process -Force
+        Start-Sleep -Seconds 2
+        Write-OK "Cleared port 3000"
+    }
 }
 Start-Service -Name NetVault
 Start-Sleep -Seconds 5
