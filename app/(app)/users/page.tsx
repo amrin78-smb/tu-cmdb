@@ -1,10 +1,13 @@
 'use client'
+import { useToast, useConfirm } from '@/app/providers'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 type User = { id: number; name: string; email: string; role: string; created_at: string }
 
 export default function UsersPage() {
+  const { showToast } = useToast()
+  const { confirm } = useConfirm()
   const { data: session } = useSession()
   const router = useRouter()
   const user = session?.user as { role?: string } | undefined

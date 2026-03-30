@@ -1,4 +1,5 @@
 'use client'
+import { useToast, useConfirm } from '@/app/providers'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
@@ -26,6 +27,8 @@ function UsageBadge({ usage }: { usage: string }) {
 }
 
 export default function CircuitsPage() {
+  const { showToast } = useToast()
+  const { confirm } = useConfirm()
   const { data: session } = useSession()
   const user = session?.user as { role?: string } | undefined
   const isAdmin = user?.role === 'admin' || user?.role === 'site_admin'

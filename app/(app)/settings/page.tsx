@@ -1,4 +1,5 @@
 'use client'
+import { useToast, useConfirm } from '@/app/providers'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -14,6 +15,8 @@ type Country = { id: number; name: string; iso_code: string; region: string }
 const CURRENCIES = ['THB', 'USD', 'EUR', 'GBP', 'NOK', 'PLN', 'SGD', 'VND', 'GHS']
 
 export default function SettingsPage() {
+  const { showToast } = useToast()
+  const { confirm } = useConfirm()
   const { data: session } = useSession()
   const router = useRouter()
   const user = session?.user as { role?: string } | undefined
@@ -139,7 +142,7 @@ export default function SettingsPage() {
       body: JSON.stringify({ id })
     })
     if (res.ok) { fetchSites() }
-    else { const d = await res.json(); alert(d.error || 'Failed to delete') }
+    else { const d = await res.json(); showToast(d.error || 'Failed to delete site', 'error') }
   }
 
   if (loadingSettings) return <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Loading...</div>
@@ -223,7 +226,7 @@ export default function SettingsPage() {
                         const res = await fetch('/api/settings/logo', { method: 'POST', body: formData })
                         const data = await res.json()
                         if (data.url) setSettings(s => ({ ...s, app_logo_url: data.url }))
-                        else alert(data.error || 'Upload failed')
+                        else showToast(data.error || 'Upload failed', 'error')
                       }} />
                     </label>
                     <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '6px' }}>PNG, JPG, SVG or WebP — max 500KB</div>

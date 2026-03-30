@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { useToast, useConfirm } from '@/app/providers'
 
 type Device = {
   id: string; name: string; brand: string; model: string; device_type: string
@@ -26,6 +27,8 @@ function LifecycleBadge({ status }: { status: string }) {
 export default function DevicesPage() {
   const { data: session } = useSession()
   const searchParams = useSearchParams()
+  const { showToast } = useToast()
+  const { confirm } = useConfirm()
   const user = session?.user as { role?: string } | undefined
   const isAdmin = user?.role === 'admin' || user?.role === 'site_admin'
 
@@ -56,7 +59,6 @@ export default function DevicesPage() {
   const [showDuplicates, setShowDuplicates] = useState(false)
   const [dupLoading, setDupLoading] = useState(false)
 
-  // Read URL params on mount and when they change
   useEffect(() => {
     setSearch(searchParams.get('search') || '')
     setRegion(searchParams.get('region') || '')
@@ -132,11 +134,16 @@ export default function DevicesPage() {
   async function bulkUpdate() {
     if (!selected.size || !bulkValue) return
     setBulkLoading(true)
-    await fetch('/api/devices/bulk', {
+    const res = await fetch('/api/devices/bulk', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids: Array.from(selected), field: bulkField, value: bulkValue })
     })
+    if (res.ok) {
+      showToast(`${selected.size} device${selected.size > 1 ? 's' : ''} updated successfully`)
+    } else {
+      showToast('Failed to update devices', 'error')
+    }
     setBulkLoading(false)
     setSelected(new Set())
     setBulkValue('')
@@ -144,9 +151,20 @@ export default function DevicesPage() {
   }
 
   async function deleteDevice(id: string, name: string) {
-    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
-    await fetch(`/api/devices/${id}`, { method: 'DELETE' })
-    fetchDevices()
+    const ok = await confirm({
+      title: 'Delete device',
+      message: `Are you sure you want to delete "${name}"? This cannot be undone.`,
+      confirmLabel: 'Delete',
+      danger: true,
+    })
+    if (!ok) return
+    const res = await fetch(`/api/devices/${id}`, { method: 'DELETE' })
+    if (res.ok) {
+      showToast(`"${name}" deleted`)
+      fetchDevices()
+    } else {
+      showToast('Failed to delete device', 'error')
+    }
   }
 
   async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -167,10 +185,11 @@ export default function DevicesPage() {
     const formData = new FormData(); formData.append('file', importFile)
     const res = await fetch('/api/import', { method: 'POST', body: formData })
     const data = await res.json()
-    setImportResult(`Done! Imported: ${data.inserted}, Skipped: ${data.skipped}`)
+    setImportResult(`Imported: ${data.inserted}, Skipped: ${data.skipped}`)
     setImportSkipped(data.skippedRows || [])
     setShowSkipped(data.skipped > 0)
     setImportLoading(false); setImportFile(null); setImportPreview([])
+    showToast(`Import complete: ${data.inserted} imported, ${data.skipped} skipped`, data.skipped > 0 ? 'info' : 'success')
     fetchDevices()
   }
 
@@ -384,9 +403,29 @@ export default function DevicesPage() {
       {/* Table */}
       <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Loading devices...</div>
+          <div style={{ padding: '16px' }}>
+            {[...Array(8)].map((_, i) => (
+              <div key={i} style={{ display: 'flex', gap: '12px', padding: '12px 8px', borderBottom: '1px solid #f3f4f6', alignItems: 'center' }}>
+                <div className="skeleton" style={{ width: '16px', height: '16px', borderRadius: '3px', flexShrink: 0 }} />
+                <div className="skeleton" style={{ width: '180px', height: '14px' }} />
+                <div className="skeleton" style={{ width: '100px', height: '14px' }} />
+                <div className="skeleton" style={{ width: '140px', height: '14px' }} />
+                <div className="skeleton" style={{ width: '110px', height: '14px' }} />
+                <div className="skeleton" style={{ width: '90px', height: '14px' }} />
+                <div className="skeleton" style={{ width: '60px', height: '14px' }} />
+                <div className="skeleton" style={{ width: '70px', height: '20px', borderRadius: '10px' }} />
+                <div className="skeleton" style={{ width: '60px', height: '20px', borderRadius: '10px' }} />
+              </div>
+            ))}
+          </div>
         ) : devices.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>No devices found</div>
+          <div style={{ padding: '60px 40px', textAlign: 'center' }}>
+            <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔍</div>
+            <div style={{ fontSize: '15px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>No devices found</div>
+            <div style={{ fontSize: '13px', color: '#9ca3af' }}>
+              {hasFilters ? 'Try adjusting or clearing your filters.' : 'No devices have been added yet.'}
+            </div>
+          </div>
         ) : (
           <div className="table-container">
             <table>
