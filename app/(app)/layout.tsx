@@ -37,7 +37,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
-    if (status === 'authenticated' && user?.role === 'site_admin') {
+    const isSiteAdminRole = user?.role === 'site_admin'
+    if (status === 'authenticated' && isSiteAdminRole) {
       const restricted = ['/dashboard', '/eol']
       if (restricted.some(p => pathname.startsWith(p))) router.push('/sites')
     }
@@ -119,7 +120,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Nav */}
         <nav style={{ flex: 1, padding: '8px 8px', overflowY: 'auto' }}>
           {navItems.map(item => {
-            if (item.adminOnly && user?.role !== 'admin') return null
+            if (item.adminOnly && user?.role !== 'admin' && user?.role !== 'super_admin') return null
             if ((item as any).hideForSiteAdmin && user?.role === 'site_admin') return null
             const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
             return (

@@ -20,7 +20,7 @@ export default function DevicesPage() {
   const { showToast } = useToast()
   const { confirm } = useConfirm()
   const user = session?.user as { role?: string } | undefined
-  const isAdmin = user?.role === 'admin' || user?.role === 'site_admin'
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'site_admin'
   const isSiteAdmin = user?.role === 'site_admin'
   const sessionUser = session?.user as { role?: string; siteIds?: number[] } | undefined
 

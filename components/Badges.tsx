@@ -16,9 +16,16 @@ export function LifecycleBadge({ status }: { status: string }) {
 
 export function RoleBadge({ role }: { role: string }) {
   const map: Record<string, string> = {
+    'super_admin': 'badge-eol',
     'admin': 'badge-admin',
     'site_admin': 'badge-viewer',
     'viewer': 'badge-unknown',
   }
-  return <span className={`badge ${map[role] || 'badge-unknown'}`}>{role}</span>
+  const labels: Record<string, string> = {
+    'super_admin': 'super admin',
+    'admin': 'admin',
+    'site_admin': 'site admin',
+    'viewer': 'viewer',
+  }
+  return <span className={`badge ${map[role] || 'badge-unknown'}`}>{labels[role] || role}</span>
 }

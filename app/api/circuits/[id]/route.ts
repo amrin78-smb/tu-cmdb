@@ -24,7 +24,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const user = session.user as { role: string }
-  if (user.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (user.role !== 'admin' && user.role !== 'super_admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const { id } = await params
   const body = await req.json()
   await query(`
@@ -47,7 +47,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const user = session.user as { role: string }
-  if (user.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (user.role !== 'admin' && user.role !== 'super_admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const { id } = await params
   await query('DELETE FROM circuits WHERE id = $1', [id])
   return NextResponse.json({ success: true })

@@ -21,7 +21,9 @@ export default function SettingsPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const user = session?.user as { role?: string } | undefined
-  useEffect(() => { if (user && user.role !== 'admin') router.push('/dashboard') }, [user, router])
+  const isSuperAdmin = user?.role === 'super_admin'
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin'
+  useEffect(() => { if (user && user.role !== 'admin' && user.role !== 'super_admin') router.push('/dashboard') }, [user, router])
 
   const [activeTab, setActiveTab] = useState<'branding'|'users'|'sites'>('branding')
   const [settings, setSettings] = useState<Settings>({ app_name: '', app_subtitle: '', app_logo_url: '', app_primary_color: '#C8102E', app_navy_color: '#1a2744' })
@@ -164,7 +166,7 @@ export default function SettingsPage() {
       </div>
 
       <div style={{ display: 'flex', borderBottom: '2px solid #f3f4f6', marginBottom: '24px' }}>
-        {(['branding', 'users', 'sites'] as const).map(tab => (
+        {(['branding', 'users', 'sites'] as const).filter(tab => tab !== 'branding' || isSuperAdmin).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '10px 20px', fontSize: '14px', fontWeight: activeTab === tab ? '600' : '400', color: activeTab === tab ? '#C8102E' : '#6b7280', background: 'none', border: 'none', borderBottom: activeTab === tab ? '2px solid #C8102E' : '2px solid transparent', cursor: 'pointer', marginBottom: '-2px', textTransform: 'capitalize' }}>
             {tab === 'branding' ? 'Branding' : tab === 'users' ? `Users (${users.length})` : `Sites (${sites.length})`}
           </button>
@@ -298,6 +300,7 @@ export default function SettingsPage() {
                   <select className="input select" value={userForm.role} onChange={e => setUserForm(p => ({ ...p, role: e.target.value, site_ids: [] }))}>
                     <option value="viewer">Viewer — read only, all sites</option>
                     <option value="site_admin">Site Admin — full edit, assigned sites only</option>
+                    {isSuperAdmin && <option value="super_admin">Super Admin — full access including branding and deletes</option>}
                     <option value="admin">Admin — full access, all sites</option>
                   </select>
                 </div>
@@ -385,7 +388,7 @@ export default function SettingsPage() {
                     <td>
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <button style={{ padding: '4px 10px', fontSize: '12px', border: '1px solid #d1d5db', borderRadius: '5px', background: 'white', cursor: 'pointer' }} onClick={() => openEditUser(u)}>Edit</button>
-                        <button className="btn-danger" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={() => deleteUser(u.id, u.name)}>Delete</button>
+                        {isSuperAdmin && <button className="btn-danger" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={() => deleteUser(u.id, u.name)}>Delete</button>}
                       </div>
                     </td>
                   </tr>
@@ -534,7 +537,7 @@ export default function SettingsPage() {
                     <td>
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <button style={{ padding: '4px 10px', fontSize: '12px', border: '1px solid #d1d5db', borderRadius: '5px', background: 'white', cursor: 'pointer' }} onClick={() => openEditSite(s)}>Edit</button>
-                        <button className="btn-danger" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={() => deleteSite(s.id, s.name || (s as any).site)}>Delete</button>
+                        {isSuperAdmin && <button className="btn-danger" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={() => deleteSite(s.id, s.name || (s as any).site)}>Delete</button>}
                       </div>
                     </td>
                   </tr>

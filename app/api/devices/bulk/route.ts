@@ -7,7 +7,7 @@ export async function PUT(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const user = session.user as { role: string; id: string }
-  if (user.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (user.role !== 'admin' && user.role !== 'super_admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const { ids, field, value } = await req.json()
   if (!ids?.length || !field || value === undefined)
