@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 
   if (search) { conditions.push(`(name ILIKE $${p} OR ip_address::text ILIKE $${p} OR model ILIKE $${p} OR serial_number ILIKE $${p})`); params.push(`%${search}%`); p++ }
   if (region) { conditions.push(`region = $${p}`); params.push(region); p++ }
-  if (site) { conditions.push(`site_id = $${p}`); params.push(parseInt(site)); p++ }
+  if (site) { conditions.push(`site = $${p}`); params.push(site); p++ }
   if (type) { conditions.push(`device_type = $${p}`); params.push(type); p++ }
   if (status) { conditions.push(`device_status = $${p}`); params.push(status); p++ }
   if (lifecycle) { conditions.push(`lifecycle_status = $${p}`); params.push(lifecycle); p++ }
