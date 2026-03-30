@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
+import * as XLSX from 'xlsx'
 
 function normaliseType(t: string) {
   const map: Record<string,string> = { 'SWITCH':'Switch','switch':'Switch','Wireless controller':'Wireless Controller','ArubaMM-VA':'Aruba MM-VA','ArubaCPPM':'Aruba CPPM' }
@@ -34,25 +35,41 @@ export async function POST(req: NextRequest) {
   const file = formData.get('file') as File
   if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 })
 
-  const text = await file.text()
-  const lines = text.split('\n').filter(l => l.trim())
-  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''))
+  const buffer = await file.arrayBuffer()
+  const fileName = file.name.toLowerCase()
 
-  function getVal(row: string[], key: string) {
-    const i = headers.findIndex(h => h.toLowerCase().includes(key.toLowerCase()))
-    return i >= 0 ? row[i]?.trim().replace(/^"|"$/g, '') || '' : ''
+  let allRows: Record<string, string>[] = []
+
+  if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+    const workbook = XLSX.read(buffer, { type: 'buffer' })
+    const sheet = workbook.Sheets[workbook.SheetNames[0]]
+    allRows = XLSX.utils.sheet_to_json(sheet, { defval: '' }).map((row: any) =>
+      Object.fromEntries(Object.entries(row).map(([k, v]) => [k, String(v ?? '')]))
+    )
+  } else {
+    const text = new TextDecoder('utf-8').decode(buffer)
+    const lines = text.split('\n').filter(l => l.trim())
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''))
+    allRows = lines.slice(1).map(line => {
+      const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''))
+      return Object.fromEntries(headers.map((h, i) => [h, vals[i] || '']))
+    })
+  }
+
+  function getVal(row: Record<string, string>, key: string) {
+    const k = Object.keys(row).find(h => h.toLowerCase().includes(key.toLowerCase()))
+    return k ? (row[k] || '').trim() : ''
   }
 
   let inserted = 0
   const skippedRows: { row: number; name: string; reason: string }[] = []
 
-  for (const [idx, line] of lines.slice(1).entries()) {
-    const rowNum = idx + 2 // 1-indexed, +1 for header
+  for (const [idx, rowData] of allRows.entries()) {
+    const rowNum = idx + 2
     try {
-      const vals = line.split(',')
-      const country = normaliseCountry(getVal(vals, 'country'))
-      const siteName = getVal(vals, 'site')
-      const deviceName = getVal(vals, 'name') || `Row ${rowNum}`
+      const country = normaliseCountry(getVal(rowData, 'country'))
+      const siteName = getVal(rowData, 'site')
+      const deviceName = getVal(rowData, 'name') || `Row ${rowNum}`
 
       if (!siteName) {
         skippedRows.push({ row: rowNum, name: deviceName, reason: 'Site name is empty' })
@@ -79,12 +96,12 @@ export async function POST(req: NextRequest) {
         continue
       }
 
-      const deviceType = normaliseType(getVal(vals, 'type'))
-      const brand = normaliseBrand(getVal(vals, 'brand'))
+      const deviceType = normaliseType(getVal(rowData, 'type'))
+      const brand = normaliseBrand(getVal(rowData, 'brand'))
       const deviceTypeId = await getOrCreate('device_types', 'name', deviceType)
       const brandId = brand ? await getOrCreate('brands', 'name', brand) : null
 
-      const ip = getVal(vals, 'ip')
+      const ip = getVal(rowData, 'ip')
       const validIp = /^\d{1,3}(\.\d{1,3}){3}$/.test(ip) ? ip : null
       if (ip && !validIp) {
         skippedRows.push({ row: rowNum, name: deviceName, reason: `Invalid IP address "${ip}"` })
@@ -101,9 +118,9 @@ export async function POST(req: NextRequest) {
       }
 
       const lifecycleMap: Record<string,string> = { 'Active, Supported':'Active, Supported','EOL / EOS':'EOL / EOS' }
-      const lifecycle = lifecycleMap[getVal(vals, 'lifecycle')] || 'Unknown'
+      const lifecycle = lifecycleMap[getVal(rowData, 'lifecycle')] || 'Unknown'
       const statusMap: Record<string,string> = { 'Active':'Active','Decommed':'Decommed','Faulty, Replaced':'Faulty, Replaced','Spare':'Spare' }
-      const devStatus = statusMap[getVal(vals, 'status')] || 'Active'
+      const devStatus = statusMap[getVal(rowData, 'status')] || 'Active'
 
       await query(`
         INSERT INTO devices (
@@ -111,10 +128,10 @@ export async function POST(req: NextRequest) {
           ip_address, site_id, lifecycle_status, device_status, created_by, updated_by
         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10)`,
         [
-          getVal(vals, 'name') || null,
+          getVal(rowData, 'name') || null,
           brandId,
-          getVal(vals, 'model') || null,
-          getVal(vals, 's/n') || getVal(vals, 'serial') || null,
+          getVal(rowData, 'model') || null,
+          getVal(rowData, 's/n') || getVal(rowData, 'serial') || null,
           deviceTypeId,
           validIp,
           siteId,
