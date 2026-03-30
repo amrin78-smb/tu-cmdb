@@ -6,8 +6,9 @@ import { query } from '@/lib/db'
 export async function PUT(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const user = session.user as { role: string; id: string }
-  if (user.role !== 'admin' && user.role !== 'super_admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const user = session.user as { role: string; id: string; siteIds?: number[] }
+  if (user.role !== 'admin' && user.role !== 'super_admin' && user.role !== 'site_admin')
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const { ids, field, value } = await req.json()
   if (!ids?.length || !field || value === undefined)
@@ -16,6 +17,16 @@ export async function PUT(req: NextRequest) {
   const allowed = ['device_status', 'lifecycle_status', 'site_id']
   if (!allowed.includes(field))
     return NextResponse.json({ error: 'Field not allowed for bulk update' }, { status: 400 })
+
+  // Site admins can only bulk edit devices at their assigned sites
+  if (user.role === 'site_admin' && user.siteIds?.length) {
+    const deviceCheck = await query(
+      `SELECT COUNT(*) FROM devices WHERE id = ANY($1) AND site_id != ALL($2)`,
+      [ids, user.siteIds]
+    )
+    if (parseInt(deviceCheck.rows[0].count) > 0)
+      return NextResponse.json({ error: 'You can only bulk edit devices at your assigned sites' }, { status: 403 })
+  }
 
   const placeholders = ids.map((_: any, i: number) => `$${i + 2}`).join(',')
   const castValue = field === 'site_id' ? parseInt(value) : value

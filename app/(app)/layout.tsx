@@ -37,8 +37,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
-    const isSiteAdminRole = user?.role === 'site_admin'
-    if (status === 'authenticated' && isSiteAdminRole) {
+    if (status === 'authenticated' && user?.role === 'site_admin') {
       const restricted = ['/dashboard', '/eol']
       if (restricted.some(p => pathname.startsWith(p))) router.push('/sites')
     }
