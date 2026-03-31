@@ -43,5 +43,31 @@ export async function PUT(req: NextRequest) {
     )
   }
 
+  // Recalculate technical_debt for affected devices
+  if (field === 'lifecycle_status' || field === 'device_status') {
+    await query(`
+      UPDATE devices d
+      SET technical_debt = CASE UPPER(TRIM(dt.name))
+        WHEN 'ACCESS POINT'        THEN 35000
+        WHEN 'CORE SWITCH'         THEN 1000000
+        WHEN 'FIREWALL'            THEN 300000
+        WHEN 'ROUTER'              THEN 25000
+        WHEN 'SWITCH'              THEN 120000
+        WHEN 'WIRELESS CONTROLLER' THEN 300000
+        ELSE NULL
+      END
+      FROM device_types dt
+      WHERE d.device_type_id = dt.id
+      AND d.id = ANY($1)
+      AND d.lifecycle_status = 'EOL / EOS'
+      AND d.device_status = 'Active'
+    `, [ids])
+    await query(`
+      UPDATE devices SET technical_debt = NULL
+      WHERE id = ANY($1)
+      AND (lifecycle_status != 'EOL / EOS' OR device_status != 'Active')
+    `, [ids])
+  }
+
   return NextResponse.json({ updated: ids.length })
 }

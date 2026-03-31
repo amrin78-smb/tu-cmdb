@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
+import { calcTechnicalDebt } from '@/lib/techDebt'
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -37,7 +38,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     [body.name,body.brand,body.model,body.serial_number,body.device_type,
      body.ip_address||null,body.mgmt_protocol||null,body.mgmt_url||null,
      body.site,body.location_detail||null,body.lifecycle_status,body.device_status,
-     body.risk_score||null,body.technical_debt||null,body.remark||null,
+     body.risk_score||null,calcTechnicalDebt(body.lifecycle_status,body.device_status,body.device_type),body.remark||null,
      body.cost||null,body.purchase_date||null,
      body.purchase_vendor||null,body.ma_vendor||null,
      parseInt(user.id),id])

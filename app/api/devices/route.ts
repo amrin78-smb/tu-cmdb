@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
+import { calcTechnicalDebt } from '@/lib/techDebt'
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
