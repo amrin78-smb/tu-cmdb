@@ -34,8 +34,7 @@ export async function GET(req: NextRequest) {
   const res = await query(
     `SELECT name, brand, model, serial_number, device_type, ip_address,
             site, location_detail, country, lifecycle_status, region,
-            device_status, technical_debt, risk_score, mgmt_protocol,
-            remark, cost, purchase_date, purchase_vendor, ma_vendor
+            device_status, technical_debt, risk_score, cost
      FROM v_devices_flat ${where} ORDER BY region, country, site, name`, params)
 
   // PowerBI-friendly column names matching expected format
@@ -54,12 +53,7 @@ export async function GET(req: NextRequest) {
     device_status: 'Device Status',
     technical_debt: 'Technical Debt',
     risk_score: 'Risk Score',
-    mgmt_protocol: 'Mgmt Protocol',
-    remark: 'Remark',
     cost: 'Cost',
-    purchase_date: 'Purchase Date',
-    purchase_vendor: 'Purchase Vendor',
-    ma_vendor: 'MA Vendor',
   }
 
   const dbCols = Object.keys(colMap)
