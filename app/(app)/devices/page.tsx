@@ -12,7 +12,7 @@ type Device = {
   lifecycle_status: string; device_status: string; serial_number: string
 }
 
-type Duplicate = { field: string; value: string; count: number; device_ids: string[] }
+type Duplicate = { field: string; value: string; count: number; classification: string; color: string; devices: { id: string; name: string; site: string; device_type: string; serial: string }[] }
 
 export default function DevicesPage() {
   const { data: session } = useSession()
@@ -225,7 +225,7 @@ export default function DevicesPage() {
         <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #fbbf24', padding: '20px 24px', marginBottom: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#92400e', margin: 0 }}>
-              Duplicate detection {duplicates.length === 0 ? '— No duplicates found' : `— ${duplicates.length} issue(s) found`}
+              Duplicate detection {duplicates.length === 0 ? '— No duplicates found' : `— ${duplicates.length} groups found`}
             </h3>
             <button onClick={() => setShowDuplicates(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: '#9ca3af' }}>×</button>
           </div>
@@ -233,14 +233,34 @@ export default function DevicesPage() {
             <p style={{ fontSize: '13px', color: '#166534', margin: 0 }}>All devices have unique IP addresses and serial numbers.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {/* Summary */}
+              {(() => {
+                const red = duplicates.filter(d => d.classification?.startsWith('🔴')).length
+                const yellow = duplicates.filter(d => d.classification?.startsWith('🟡')).length
+                const green = duplicates.filter(d => d.classification?.startsWith('🟢')).length
+                return (
+                  <div style={{ display: 'flex', gap: '10px', marginBottom: '14px', flexWrap: 'wrap' as const }}>
+                    {red > 0 && <span style={{ background: '#fee2e2', color: '#991b1b', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' }}>🔴 {red} likely duplicates</span>}
+                    {yellow > 0 && <span style={{ background: '#fef9c3', color: '#92400e', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' }}>🟡 {yellow} needs review</span>}
+                    {green > 0 && <span style={{ background: '#dcfce7', color: '#166534', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' }}>🟢 {green} likely valid</span>}
+                  </div>
+                )
+              })()}
               {duplicates.map((d, i) => (
-                <div key={i} style={{ background: '#fef3c7', borderRadius: '6px', padding: '10px 14px', fontSize: '13px' }}>
-                  <span style={{ fontWeight: '600', color: '#92400e' }}>{d.field}: </span>
-                  <span style={{ fontFamily: 'monospace', color: '#111827' }}>{d.value}</span>
-                  <span style={{ color: '#6b7280' }}> — appears {d.count} times</span>
-                  <div style={{ marginTop: '4px', display: 'flex', gap: '6px', flexWrap: 'wrap' as const }}>
-                    {d.device_ids.map(id => (
-                      <Link key={id} href={`/devices/${id}`} style={{ fontSize: '11px', color: '#C8102E', textDecoration: 'underline' }}>View device</Link>
+                <div key={i} style={{ background: d.color || '#fef3c7', borderRadius: '6px', padding: '10px 14px', fontSize: '13px', marginBottom: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' as const, marginBottom: '4px' }}>
+                    <span style={{ fontWeight: '600', color: '#374151' }}>{d.field}: </span>
+                    <span style={{ fontFamily: 'monospace', color: '#111827' }}>{d.value}</span>
+                    <span style={{ color: '#6b7280' }}>— {d.count} devices</span>
+                    <span style={{ fontSize: '12px', color: '#374151' }}>{d.classification}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' as const }}>
+                    {(d.devices || []).map(dev => (
+                      <div key={dev.id} style={{ fontSize: '11px', color: '#374151' }}>
+                        <Link href={`/devices/${dev.id}`} style={{ color: '#C8102E', textDecoration: 'underline', fontWeight: '500' }}>{dev.name || 'Unnamed'}</Link>
+                        <span style={{ color: '#6b7280' }}> · {dev.site} · {dev.device_type}</span>
+                        {dev.serial && dev.serial !== 'nan' && <span style={{ color: '#9ca3af' }}> · S/N: {dev.serial}</span>}
+                      </div>
                     ))}
                   </div>
                 </div>
