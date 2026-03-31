@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import Breadcrumb from '@/components/Breadcrumb'
 import { StatusBadge, LifecycleBadge } from '@/components/Badges'
-import { useToast, useConfirm } from '@/app/providers'
+import { useToast } from '@/app/providers'
 
 type SiteData = {
   site: { id: string; site: string; code: string; country: string; region: string }
@@ -30,7 +30,6 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
   const [bulkValue, setBulkValue] = useState('')
   const [bulkLoading, setBulkLoading] = useState(false)
   const { showToast } = useToast()
-  const { confirm } = useConfirm()
 
 
   const [siteId, setSiteId] = useState('')

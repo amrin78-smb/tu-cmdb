@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 
 const CURRENCIES = ['THB', 'USD', 'EUR', 'GBP', 'NOK', 'PLN', 'SGD', 'VND', 'GHS']
@@ -11,6 +12,11 @@ type Lookups = {
 
 export default function NewCircuitPage() {
   const router = useRouter()
+  const { data: session } = useSession()
+  const user = session?.user as { role?: string } | undefined
+  useEffect(() => {
+    if (user && user.role !== 'admin' && user.role !== 'super_admin') router.push('/circuits')
+  }, [user, router])
   const searchParams = useSearchParams()
   const prefillSite = searchParams.get('site') || ''
   const prefillSiteId = searchParams.get('site_id') || ''

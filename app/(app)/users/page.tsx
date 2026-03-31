@@ -12,7 +12,7 @@ export default function UsersPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const user = session?.user as { role?: string } | undefined
-  useEffect(() => { if (user && user.role !== 'admin' && user.role !== 'super_admin') router.push('/devices') }, [user, router])
+  useEffect(() => { if (user) router.push('/settings') }, [user, router])
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
