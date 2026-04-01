@@ -10,6 +10,26 @@ type Lookups = {
   sites: { site: string; country: string; region: string; id: string }[]
 }
 
+function Field({ label, required, span, children }: { label: string; required?: boolean; span?: boolean; children: React.ReactNode }) {
+  return (
+    <div style={{ gridColumn: span ? '1 / -1' : undefined }}>
+      <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: '#374151', marginBottom: '6px' }}>
+        {label}{required && <span style={{ color: '#C8102E' }}> *</span>}
+      </label>
+      {children}
+    </div>
+  )
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="card" style={{ marginBottom: '16px' }}>
+      <h2 style={{ fontSize: '15px', fontWeight: '600', color: '#111827', marginBottom: '18px', paddingBottom: '10px', borderBottom: '1px solid #f3f4f6' }}>{title}</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>{children}</div>
+    </div>
+  )
+}
+
 export default function NewCircuitPage() {
   const router = useRouter()
   const { data: session } = useSession()
@@ -67,21 +87,7 @@ export default function NewCircuitPage() {
     }
   }
 
-  const Field = ({ label, required, span, children }: { label: string; required?: boolean; span?: boolean; children: React.ReactNode }) => (
-    <div style={{ gridColumn: span ? '1 / -1' : undefined }}>
-      <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: '#374151', marginBottom: '6px' }}>
-        {label}{required && <span style={{ color: '#C8102E' }}> *</span>}
-      </label>
-      {children}
-    </div>
-  )
 
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div className="card" style={{ marginBottom: '16px' }}>
-      <h2 style={{ fontSize: '15px', fontWeight: '600', color: '#111827', marginBottom: '18px', paddingBottom: '10px', borderBottom: '1px solid #f3f4f6' }}>{title}</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>{children}</div>
-    </div>
-  )
 
   return (
     <div style={{ padding: '24px 28px', maxWidth: '900px' }}>

@@ -8,6 +8,35 @@ type Circuit = Record<string, any>
 
 const CURRENCIES = ['THB', 'USD', 'EUR', 'GBP', 'NOK', 'PLN', 'SGD', 'VND', 'GHS']
 
+function CircuitField({ label, value }: { label: string; value: any }) {
+  return (
+    <div style={{ marginBottom: '14px' }}>
+      <div style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '3px' }}>{label}</div>
+      <div style={{ fontSize: '14px', color: value && String(value) !== 'nan' && value !== '-' ? '#111827' : '#d1d5db', fontFamily: ['Circuit ID','Public subnet','Max speed','Guaranteed speed'].includes(label) ? 'monospace' : undefined }}>
+        {value && String(value) !== 'nan' && value !== '-' ? value : '—'}
+      </div>
+    </div>
+  )
+}
+
+function CircuitEditField({ label, field, form, setForm, type = 'text' }: { label: string; field: string; form: any; setForm: any; type?: string }) {
+  return (
+    <div style={{ marginBottom: '14px' }}>
+      <label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>{label}</label>
+      <input className="input" type={type} value={form[field] || ''} onChange={e => setForm((f: any) => ({ ...f, [field]: e.target.value }))} />
+    </div>
+  )
+}
+
+function CircuitSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', padding: '18px 22px', marginBottom: '16px' }}>
+      <h2 style={{ fontSize: '13px', fontWeight: '600', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid #f3f4f6' }}>{title}</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>{children}</div>
+    </div>
+  )
+}
+
 export default function CircuitDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session } = useSession()
   const user = session?.user as { role?: string } | undefined
@@ -61,28 +90,7 @@ export default function CircuitDetailPage({ params }: { params: Promise<{ id: st
     return `${currency || 'THB'} ${parseFloat(cost).toLocaleString()}`
   }
 
-  const Field = ({ label, value }: { label: string; value: any }) => (
-    <div style={{ marginBottom: '14px' }}>
-      <div style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '3px' }}>{label}</div>
-      <div style={{ fontSize: '14px', color: value && String(value) !== 'nan' && value !== '-' ? '#111827' : '#d1d5db', fontFamily: ['Circuit ID','Public subnet','Max speed','Guaranteed speed'].includes(label) ? 'monospace' : undefined }}>
-        {value && String(value) !== 'nan' && value !== '-' ? value : '—'}
-      </div>
-    </div>
-  )
 
-  const EditField = ({ label, field, type = 'text' }: { label: string; field: string; type?: string }) => (
-    <div style={{ marginBottom: '14px' }}>
-      <label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>{label}</label>
-      <input className="input" type={type} value={form[field] || ''} onChange={e => setForm((f: Circuit) => ({ ...f, [field]: e.target.value }))} />
-    </div>
-  )
-
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', padding: '18px 22px', marginBottom: '16px' }}>
-      <h2 style={{ fontSize: '13px', fontWeight: '600', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid #f3f4f6' }}>{title}</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>{children}</div>
-    </div>
-  )
 
   return (
     <div style={{ padding: '24px 28px', maxWidth: '900px' }}>
@@ -129,9 +137,9 @@ export default function CircuitDetailPage({ params }: { params: Promise<{ id: st
       {editing ? (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           <div>
-            <Section title="Circuit details">
-              <EditField label="Circuit ID" field="circuit_id" />
-              <EditField label="ISP" field="isp" />
+            <CircuitSection title="Circuit details">
+              <CircuitEditField form={form} setForm={setForm} label="Circuit ID" field="circuit_id" />
+              <CircuitEditField form={form} setForm={setForm} label="ISP" field="isp" />
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>USAGE</label>
                 <select className="input select" value={form.usage || ''} onChange={e => setForm((f: Circuit) => ({ ...f, usage: e.target.value }))}>
@@ -203,58 +211,58 @@ export default function CircuitDetailPage({ params }: { params: Promise<{ id: st
                 <option key='Others'>Others</option>
                 </select>
               </div>
-              <EditField label="Max speed" field="max_speed" />
-              <EditField label="Guaranteed speed" field="guaranteed_speed" />
-            </Section>
+              <CircuitEditField form={form} setForm={setForm} label="Max speed" field="max_speed" />
+              <CircuitEditField form={form} setForm={setForm} label="Guaranteed speed" field="guaranteed_speed" />
+            </CircuitSection>
           </div>
           <div>
-            <Section title="Commercial">
-              <EditField label="Public subnet" field="public_subnet" />
+            <CircuitSection title="Commercial">
+              <CircuitEditField form={form} setForm={setForm} label="Public subnet" field="public_subnet" />
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>Currency</label>
                 <select className="input select" value={form.currency || 'THB'} onChange={e => setForm((f: Circuit) => ({ ...f, currency: e.target.value }))}>
                   {CURRENCIES.map(c => <option key={c}>{c}</option>)}
                 </select>
               </div>
-              <EditField label="Cost/month" field="cost_month" type="number" />
-              <EditField label="Contract term" field="contract_term" />
+              <CircuitEditField form={form} setForm={setForm} label="Cost/month" field="cost_month" type="number" />
+              <CircuitEditField form={form} setForm={setForm} label="Contract term" field="contract_term" />
               <div style={{ gridColumn: '1 / -1' }}>
                 <label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>Comment</label>
                 <textarea className="input" rows={3} value={form.comment || ''} onChange={e => setForm((f: Circuit) => ({ ...f, comment: e.target.value }))} style={{ resize: 'vertical' }} />
               </div>
-            </Section>
+            </CircuitSection>
           </div>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           <div>
-            <Section title="Circuit details">
-              <Field label="Circuit ID" value={circuit.circuit_id} />
-              <Field label="Product" value={circuit.product} />
-              <Field label="Usage" value={circuit.usage} />
-              <Field label="Technology" value={circuit.technology} />
-              <Field label="Circuit type" value={circuit.circuit_type} />
-              <Field label="Interface" value={circuit.interface} />
-              <Field label="Max speed" value={formatSpeed(circuit.max_speed)} />
-              <Field label="Guaranteed speed" value={formatSpeed(circuit.guaranteed_speed)} />
-            </Section>
-            <Section title="Location">
-              <Field label="Site" value={circuit.site || circuit.site_name_raw} />
-              <Field label="City" value={circuit.city} />
-              <Field label="Country" value={circuit.country} />
-              <Field label="Region" value={circuit.region} />
-              <div style={{ gridColumn: '1 / -1' }}><Field label="Address" value={circuit.address} /></div>
-              <div style={{ gridColumn: '1 / -1' }}><Field label="IT owner" value={circuit.it_owner} /></div>
-            </Section>
+            <CircuitSection title="Circuit details">
+              <CircuitField label="Circuit ID" value={circuit.circuit_id} />
+              <CircuitField label="Product" value={circuit.product} />
+              <CircuitField label="Usage" value={circuit.usage} />
+              <CircuitField label="Technology" value={circuit.technology} />
+              <CircuitField label="Circuit type" value={circuit.circuit_type} />
+              <CircuitField label="Interface" value={circuit.interface} />
+              <CircuitField label="Max speed" value={formatSpeed(circuit.max_speed)} />
+              <CircuitField label="Guaranteed speed" value={formatSpeed(circuit.guaranteed_speed)} />
+            </CircuitSection>
+            <CircuitSection title="Location">
+              <CircuitField label="Site" value={circuit.site || circuit.site_name_raw} />
+              <CircuitField label="City" value={circuit.city} />
+              <CircuitField label="Country" value={circuit.country} />
+              <CircuitField label="Region" value={circuit.region} />
+              <div style={{ gridColumn: '1 / -1' }}><CircuitField label="Address" value={circuit.address} /></div>
+              <div style={{ gridColumn: '1 / -1' }}><CircuitField label="IT owner" value={circuit.it_owner} /></div>
+            </CircuitSection>
           </div>
           <div>
-            <Section title="Commercial">
-              <Field label="Public subnet" value={circuit.public_subnet} />
-              <Field label="Currency" value={circuit.currency || 'THB'} />
-              <Field label="Cost / month" value={formatCost(circuit.cost_month, circuit.currency)} />
-              <Field label="Contract term" value={circuit.contract_term} />
-              <div style={{ gridColumn: '1 / -1' }}><Field label="Comment" value={circuit.comment} /></div>
-            </Section>
+            <CircuitSection title="Commercial">
+              <CircuitField label="Public subnet" value={circuit.public_subnet} />
+              <CircuitField label="Currency" value={circuit.currency || 'THB'} />
+              <CircuitField label="Cost / month" value={formatCost(circuit.cost_month, circuit.currency)} />
+              <CircuitField label="Contract term" value={circuit.contract_term} />
+              <div style={{ gridColumn: '1 / -1' }}><CircuitField label="Comment" value={circuit.comment} /></div>
+            </CircuitSection>
           </div>
         </div>
       )}

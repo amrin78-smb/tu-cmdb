@@ -90,6 +90,26 @@ function parseLogEntry(log: Log): { label: string; detail: string | null; dotCol
   }
 }
 
+function DeviceField({ label, value }: { label: string; value: any }) {
+  return (
+    <div style={{ marginBottom: '12px' }}>
+      <div style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '3px' }}>{label}</div>
+      <div style={{ fontSize: '14px', color: value ? '#111827' : '#d1d5db', fontFamily: label === 'IP address' || label === 'Serial number' ? 'monospace' : undefined }}>
+        {value || '—'}
+      </div>
+    </div>
+  )
+}
+
+function DeviceSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', padding: '20px 24px', marginBottom: '16px' }}>
+      <h2 style={{ fontSize: '13px', fontWeight: '600', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid #f3f4f6' }}>{title}</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>{children}</div>
+    </div>
+  )
+}
+
 export default function DeviceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session } = useSession()
   const user = session?.user as { role?: string } | undefined
@@ -119,21 +139,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
   if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Loading...</div>
   if (!device) return <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Device not found</div>
 
-  const Field = ({ label, value }: { label: string; value: any }) => (
-    <div style={{ marginBottom: '12px' }}>
-      <div style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '3px' }}>{label}</div>
-      <div style={{ fontSize: '14px', color: value ? '#111827' : '#d1d5db', fontFamily: label === 'IP address' || label === 'Serial number' ? 'monospace' : undefined }}>
-        {value || '—'}
-      </div>
-    </div>
-  )
 
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', padding: '20px 24px', marginBottom: '16px' }}>
-      <h2 style={{ fontSize: '13px', fontWeight: '600', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid #f3f4f6' }}>{title}</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>{children}</div>
-    </div>
-  )
 
   return (
     <div style={{ padding: '24px 28px', maxWidth: '960px' }}>
@@ -168,40 +174,40 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
         <div>
-          <Section title="Identity">
-            <Field label="Device name" value={device.name} />
-            <Field label="Device type" value={device.device_type} />
-            <Field label="Brand" value={device.brand} />
-            <Field label="Model" value={device.model} />
-            <Field label="Serial number" value={device.serial_number} />
-          </Section>
-          <Section title="Network">
-            <Field label="IP address" value={device.ip_address} />
-            <Field label="Mgmt protocol" value={device.mgmt_protocol} />
-            <div style={{ gridColumn: '1 / -1' }}><Field label="Mgmt URL" value={device.mgmt_url} /></div>
-          </Section>
-          <Section title="Procurement">
-            <Field label="Cost" value={device.cost ? `$${parseFloat(device.cost).toLocaleString()}` : null} />
-            <Field label="Purchase date" value={device.purchase_date ? new Date(device.purchase_date).toLocaleDateString() : null} />
-            <Field label="Purchase vendor" value={device.purchase_vendor} />
-            <Field label="MA vendor" value={device.ma_vendor} />
-          </Section>
+          <DeviceSection title="Identity">
+            <DeviceField label="Device name" value={device.name} />
+            <DeviceField label="Device type" value={device.device_type} />
+            <DeviceField label="Brand" value={device.brand} />
+            <DeviceField label="Model" value={device.model} />
+            <DeviceField label="Serial number" value={device.serial_number} />
+          </DeviceSection>
+          <DeviceSection title="Network">
+            <DeviceField label="IP address" value={device.ip_address} />
+            <DeviceField label="Mgmt protocol" value={device.mgmt_protocol} />
+            <div style={{ gridColumn: '1 / -1' }}><DeviceField label="Mgmt URL" value={device.mgmt_url} /></div>
+          </DeviceSection>
+          <DeviceSection title="Procurement">
+            <DeviceField label="Cost" value={device.cost ? `$${parseFloat(device.cost).toLocaleString()}` : null} />
+            <DeviceField label="Purchase date" value={device.purchase_date ? new Date(device.purchase_date).toLocaleDateString() : null} />
+            <DeviceField label="Purchase vendor" value={device.purchase_vendor} />
+            <DeviceField label="MA vendor" value={device.ma_vendor} />
+          </DeviceSection>
         </div>
 
         <div>
-          <Section title="Location">
-            <Field label="Site" value={device.site} />
-            <Field label="Country" value={device.country} />
-            <Field label="Region" value={device.region} />
-            <div style={{ gridColumn: '1 / -1' }}><Field label="Location detail" value={device.location_detail} /></div>
-          </Section>
-          <Section title="Lifecycle">
-            <Field label="Device status" value={device.device_status} />
-            <Field label="Lifecycle status" value={device.lifecycle_status} />
-            <Field label="Risk score" value={device.risk_score} />
-            <div style={{ gridColumn: '1 / -1' }}><Field label="Technical debt" value={device.technical_debt} /></div>
-            <div style={{ gridColumn: '1 / -1' }}><Field label="Remark" value={device.remark} /></div>
-          </Section>
+          <DeviceSection title="Location">
+            <DeviceField label="Site" value={device.site} />
+            <DeviceField label="Country" value={device.country} />
+            <DeviceField label="Region" value={device.region} />
+            <div style={{ gridColumn: '1 / -1' }}><DeviceField label="Location detail" value={device.location_detail} /></div>
+          </DeviceSection>
+          <DeviceSection title="Lifecycle">
+            <DeviceField label="Device status" value={device.device_status} />
+            <DeviceField label="Lifecycle status" value={device.lifecycle_status} />
+            <DeviceField label="Risk score" value={device.risk_score} />
+            <div style={{ gridColumn: '1 / -1' }}><DeviceField label="Technical debt" value={device.technical_debt} /></div>
+            <div style={{ gridColumn: '1 / -1' }}><DeviceField label="Remark" value={device.remark} /></div>
+          </DeviceSection>
 
           {/* Change history timeline */}
           <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', padding: '20px 24px' }}>
