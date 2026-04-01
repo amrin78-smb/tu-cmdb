@@ -38,11 +38,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
+  }, [status, router])
+
+  useEffect(() => {
     if (status === 'authenticated' && user?.role === 'site_admin') {
       const restricted = ['/dashboard', '/eol']
       if (restricted.some(p => pathname.startsWith(p))) router.push('/sites')
     }
-  }, [status, router, user, pathname])
+  }, [pathname, status, user?.role, router])
 
   useEffect(() => {
     if (status === 'authenticated' && !settingsFetched.current) {
