@@ -31,7 +31,8 @@ export default function DeviceForm({ initialData, deviceId }: DeviceFormProps) {
         setForm(f => ({ ...f, site: data.sites[0].site }))
       }
     })
-  }, [isSiteAdmin])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   function set(field: string, value: string) { setForm(f => ({ ...f, [field]: value })) }
 
   async function handleSubmit(e: React.FormEvent) {
