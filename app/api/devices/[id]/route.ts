@@ -7,9 +7,13 @@ import { calcTechnicalDebt } from '@/lib/techDebt'
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const user = session.user as { role: string; siteIds?: number[] }
   const { id } = await params
   const res = await query('SELECT * FROM v_devices_flat WHERE id = $1', [id])
   if (!res.rows[0]) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (user.role === 'site_admin' && !user.siteIds?.includes(res.rows[0].site_id)) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
   return NextResponse.json(res.rows[0])
 }
 
