@@ -52,16 +52,31 @@ export async function POST(req: NextRequest) {
   const sessionUser = session.user as { role: string; id: string; siteIds?: number[] }
   if (sessionUser.role === 'viewer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const body = await req.json()
+
+  // Look up site_id from site name
+  const siteRes = await query('SELECT id FROM sites WHERE name = $1', [body.site])
+  if (!siteRes.rows[0]) return NextResponse.json({ error: 'Site not found' }, { status: 400 })
+  const siteId = siteRes.rows[0].id
+
+  // Look up brand_id and type_id from names
+  const brandRes = body.brand ? await query('SELECT id FROM brands WHERE name = $1', [body.brand]) : { rows: [] as any[] }
+  const brandId = brandRes.rows[0]?.id || null
+  const typeRes = body.device_type ? await query('SELECT id FROM device_types WHERE name = $1', [body.device_type]) : { rows: [] as any[] }
+  const typeId = typeRes.rows[0]?.id || null
+
   // site_admin can only add to assigned sites
-  if (sessionUser.role === 'site_admin' && !sessionUser.siteIds?.includes(parseInt(body.site_id))) {
+  if (sessionUser.role === 'site_admin' && !sessionUser.siteIds?.includes(siteId)) {
     return NextResponse.json({ error: 'You can only add devices to your assigned sites' }, { status: 403 })
   }
+
   const res = await query(`
-    INSERT INTO devices (name, brand_id, model, serial_number, device_type_id, ip_address, site_id, lifecycle_status, device_status, created_by, updated_by)
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10) RETURNING id`,
-    [body.name||null, body.brand_id||null, body.model||null, body.serial_number||null,
-     body.device_type_id||null, body.ip_address||null, body.site_id,
-     body.lifecycle_status||'Unknown', body.device_status||'Active', parseInt(sessionUser.id)]
+    INSERT INTO devices (name, brand_id, model, serial_number, device_type_id, ip_address, site_id, lifecycle_status, device_status, technical_debt, created_by, updated_by)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11) RETURNING id`,
+    [body.name||null, brandId, body.model||null, body.serial_number||null,
+     typeId, body.ip_address||null, siteId,
+     body.lifecycle_status||'Unknown', body.device_status||'Active',
+     calcTechnicalDebt(body.lifecycle_status||'Unknown', body.device_status||'Active', body.device_type||''),
+     parseInt(sessionUser.id)]
   )
-  return NextResponse.json({ id: res.rows[0].id }, { status: 201 })
+  return NextResponse.json({ id: res.rows[0].id, name: body.name, site: body.site }, { status: 201 })
 }

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { useToast } from '@/app/providers'
 
 type Lookups = {
   regions: string[]; sites: { site: string; country: string; region: string }[]
@@ -16,6 +17,7 @@ export default function DeviceForm({ initialData, deviceId }: DeviceFormProps) {
   const { data: session } = useSession()
   const sessionUser = session?.user as { role?: string; siteIds?: number[] } | undefined
   const isSiteAdmin = sessionUser?.role === 'site_admin'
+  const { showToast } = useToast()
   const [lookups, setLookups] = useState<Lookups | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -43,8 +45,20 @@ export default function DeviceForm({ initialData, deviceId }: DeviceFormProps) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)
     })
-    if (res.ok) { router.push('/devices'); router.refresh() }
-    else { const data = await res.json(); setError(data.error || 'Failed to save'); setSaving(false) }
+    if (res.ok) {
+      const data = await res.json()
+      if (!deviceId) {
+        showToast(`Device "${data.name || body.name}" added successfully to ${data.site || body.site}`)
+      } else {
+        showToast('Device updated successfully')
+      }
+      router.push('/devices')
+      router.refresh()
+    } else {
+      const data = await res.json()
+      setError(data.error || 'Failed to save')
+      setSaving(false)
+    }
   }
 
   if (!lookups) return <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Loading...</div>
