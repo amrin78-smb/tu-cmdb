@@ -1,7 +1,7 @@
 'use client'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter, usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import GlobalSearch from '@/components/GlobalSearch'
 
@@ -34,6 +34,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [pwError, setPwError] = useState('')
   const [pwSuccess, setPwSuccess] = useState(false)
   const [pwSaving, setPwSaving] = useState(false)
+  const settingsFetched = useRef(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -44,7 +45,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [status, router, user, pathname])
 
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (status === 'authenticated' && !settingsFetched.current) {
+      settingsFetched.current = true
       fetch('/api/settings').then(r => r.json()).then(d => {
         if (d && !d.error) setSettings(d)
       }).catch(() => {})
