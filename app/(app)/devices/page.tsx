@@ -258,6 +258,7 @@ export default function DevicesPage() {
                     {(d.devices || []).map(dev => (
                       <div key={dev.id} style={{ fontSize: '11px', color: '#374151' }}>
                         <Link href={`/devices/${dev.id}`} style={{ color: '#C8102E', textDecoration: 'underline', fontWeight: '500' }}>{dev.name || 'Unnamed'}</Link>
+                        <Link href={`/devices/${dev.id}/edit`} style={{ color: '#6b7280', fontSize: '10px', marginLeft: '4px', textDecoration: 'underline' }}>edit</Link>
                         <span style={{ color: '#6b7280' }}> · {dev.site} · {dev.device_type}</span>
                         {dev.serial && dev.serial !== 'nan' && <span style={{ color: '#9ca3af' }}> · S/N: {dev.serial}</span>}
                       </div>
@@ -274,7 +275,21 @@ export default function DevicesPage() {
       {showImport && isAdmin && (
         <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', padding: '20px 24px', marginBottom: '16px' }}>
           <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#111827', marginBottom: '12px' }}>Import devices from Excel / CSV</h3>
-          <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '12px' }}>File must have columns: Name, Brand, Model, S/N, Type, IP Address, Site, Country, Lifecycle Status, Device Status</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+            <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>File must have columns: Name, Brand, Model, S/N, Type, IP Address, Site, Country, Lifecycle Status, Device Status</p>
+            <button className="btn-secondary" onClick={() => {
+              const headers = ['Name','Brand','Model','S/N','Type','IP Address','Site','Country','Lifecycle Status','Device Status']
+              const example = ['SW-CORE-01','Cisco','C9300-48P','FHH1234X001','Switch','192.168.1.1','Bangkok HQ','Thailand','Active, Supported','Active']
+              const csv = [headers.join(','), example.join(',')].join('\n')
+              const blob = new Blob([csv], { type: 'text/csv' })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url; a.download = 'NetVault_Import_Template.csv'; a.click()
+              URL.revokeObjectURL(url)
+            }} style={{ fontSize: '12px', whiteSpace: 'nowrap', marginLeft: '16px', flexShrink: 0 }}>
+              ⬇ Download template
+            </button>
+          </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '12px' }}>
             <input type="file" accept=".xlsx,.csv" onChange={handleImportFile} style={{ fontSize: '13px' }} />
             {importLoading && <span style={{ fontSize: '13px', color: '#9ca3af' }}>Processing...</span>}
