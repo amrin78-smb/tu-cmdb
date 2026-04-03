@@ -59,6 +59,7 @@ export default function DeviceForm({ initialData, deviceId }: DeviceFormProps) {
     e.preventDefault()
     if (!form.name || !form.device_type || !form.site) { setError('Name, device type and site are required'); return }
     if (form.device_type === 'Others' && !(form as any).device_type_other) { setError('Please specify the device type'); return }
+    if (form.ip_address && !/^\d{1,3}(\.\d{1,3}){3}$/.test(form.ip_address.trim())) { setError('Invalid IP address format (e.g. 192.168.1.1)'); return }
     if (form.device_type === 'Others') (form as any).device_type = (form as any).device_type_other
     setSaving(true); setError('')
     const res = await fetch(deviceId ? `/api/devices/${deviceId}` : '/api/devices', {
