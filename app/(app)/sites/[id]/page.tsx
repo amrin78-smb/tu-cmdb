@@ -334,12 +334,13 @@ export default function SiteDetailPage({ params }: { params: Promise<{ id: strin
                   <div style={{ fontSize: '12px', fontWeight: '600', color: group.color, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>{group.label} — {group.items.length}</div>
                   <div style={{ background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
                     <table>
-                      <thead><tr><th>ISP</th><th>Circuit ID</th><th>Technology</th><th>Max speed</th><th>Public subnet</th><th>Cost/month</th><th></th></tr></thead>
+                      <thead><tr><th>ISP</th><th>Circuit ID</th><th>Product</th><th>Technology</th><th>Max speed</th><th>Public subnet</th><th>Cost/month</th><th></th></tr></thead>
                       <tbody>
                         {group.items.map((c: Circuit) => (
                           <tr key={c.id}>
                             <td style={{ fontWeight: '500' }}>{c.isp}</td>
                             <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{c.circuit_id || '—'}</td>
+                            <td style={{ fontSize: '12px' }}>{c.product && c.product !== 'nan' ? c.product : '—'}</td>
                             <td><span className="badge" style={{ background: '#ede9fe', color: '#5b21b6' }}>{c.technology && c.technology !== 'nan' ? c.technology : '—'}</span></td>
                             <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{formatSpeed(c.max_speed)}</td>
                             <td style={{ fontFamily: 'monospace', fontSize: '12px' }}>{c.public_subnet && c.public_subnet !== '-' && c.public_subnet !== 'nan' ? c.public_subnet : '—'}</td>
