@@ -12,8 +12,8 @@ type Settings = {
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: '▤', hideForSiteAdmin: true },
-  { href: '/devices', label: 'My devices', icon: '☰' },
   { href: '/sites', label: 'Sites', icon: '◈' },
+  { href: '/devices', label: 'My devices', icon: '☰' },
   { href: '/circuits', label: 'Circuits', icon: '⇌' },
   { href: '/eol', label: 'EOL / Risk', icon: '⚠', hideForSiteAdmin: true },
   { href: '/audit', label: 'Audit log', icon: '≡', adminOnly: true },
@@ -25,6 +25,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const user = session?.user as { role?: string; name?: string } | undefined
+  const userRole = user?.role
+  const userName = user?.name
   const [settings, setSettings] = useState<Settings>({
     app_name: 'TU CMDB', app_subtitle: 'Thai Union Group',
     app_logo_url: '', app_primary_color: '#C8102E', app_navy_color: '#1a2744',
@@ -41,11 +43,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [status, router])
 
   useEffect(() => {
-    if (status === 'authenticated' && user?.role === 'site_admin') {
+    if (status === 'authenticated' && userRole === 'site_admin') {
       const restricted = ['/dashboard', '/eol']
       if (restricted.some(p => pathname.startsWith(p))) router.push('/sites')
     }
-  }, [pathname, status, user?.role, router])
+  }, [pathname, status, userRole, router])
 
   useEffect(() => {
     if (status === 'authenticated' && !settingsFetched.current) {
@@ -100,10 +102,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Logo */}
         <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
           {settings.app_logo_url ? (
-            <img src={settings.app_logo_url} alt="logo" style={{ width: '100%', maxHeight: '48px', objectFit: 'contain', objectPosition: 'left' }} />
+            <img src={settings.app_logo_url} alt="logo" style={{ width: '100%', maxHeight: '64px', objectFit: 'contain', objectPosition: 'left' }} />
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '32px', height: '32px', background: primary, borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: '40px', height: '40px', background: primary, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
                 </svg>
@@ -124,8 +126,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Nav */}
         <nav style={{ flex: 1, padding: '8px 8px', overflowY: 'auto' }}>
           {navItems.map(item => {
-            if (item.adminOnly && user?.role !== 'admin' && user?.role !== 'super_admin') return null
-            if ((item as any).hideForSiteAdmin && user?.role === 'site_admin') return null
+            if (item.adminOnly && userRole !== 'admin' && userRole !== 'super_admin') return null
+            if ((item as any).hideForSiteAdmin && userRole === 'site_admin') return null
             const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
             return (
               <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }}>
@@ -148,11 +150,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div style={{ padding: '10px 12px', borderRadius: '7px', background: 'rgba(255,255,255,0.05)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600', color: 'white', flexShrink: 0 }}>
-                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                {userName?.charAt(0)?.toUpperCase() || 'U'}
               </div>
               <div style={{ overflow: 'hidden' }}>
-                <div style={{ fontSize: '12px', fontWeight: '500', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</div>
-                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>{user?.role}</div>
+                <div style={{ fontSize: '12px', fontWeight: '500', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userName}</div>
+                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>{userRole}</div>
               </div>
             </div>
             <div style={{ display: 'flex', gap: '6px' }}>
