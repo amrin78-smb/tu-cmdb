@@ -13,7 +13,7 @@ export async function GET() {
   const siteFilter = isSiteAdmin && siteIds.length ? `AND s.id = ANY(ARRAY[${siteIds.join(',')}])` : ''
 
   const res = await query(`
-    SELECT s.id, s.name, s.code, s.site_status,
+    SELECT s.id, s.name AS site, s.code, s.site_status,
            c.name AS country, c.iso_code, r.name AS region,
            COUNT(d.id) as total,
            COUNT(d.id) FILTER (WHERE d.device_status = 'Active') as active,
