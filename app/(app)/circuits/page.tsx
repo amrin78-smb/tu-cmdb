@@ -161,7 +161,8 @@ export default function CircuitsPage() {
                 <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', width: '8%' }}>Country</th>
                 <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', width: '13%' }}>ISP</th>
                 <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', width: '10%' }}>Usage</th>
-                <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', width: '18%' }}>Max speed</th>
+                <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', width: '12%' }}>Product</th>
+                <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', width: '13%' }}>Max speed</th>
                 <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', width: '15%' }}>Public subnet</th>
                 <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', width: '11%' }}>Cost/month</th>
                 <th style={{ padding: '10px 14px', background: '#f9fafb', textAlign: 'left', fontSize: '11px', fontWeight: '600', color: '#6b7280', borderBottom: '1px solid #e5e7eb', width: '12%' }}>Actions</th>
@@ -178,6 +179,7 @@ export default function CircuitsPage() {
                     <td style={{ padding: '10px 14px', fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap' }}>{c.country}</td>
                     <td style={{ padding: '10px 14px', fontWeight: '500', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={c.isp}>{c.isp}</td>
                     <td style={{ padding: '10px 14px', maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}><UsageBadge usage={c.usage} /></td>
+                    <td style={{ padding: '10px 14px', fontSize: '12px', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.product && c.product !== 'nan' ? c.product : '—'}</td>
                     <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={c.max_speed}>{formatSpeed(c.max_speed)}</td>
                     <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.public_subnet && c.public_subnet !== '-' && c.public_subnet !== 'nan' ? c.public_subnet : '—'}</td>
                     <td style={{ padding: '10px 14px', fontSize: '12px', whiteSpace: 'nowrap' }}>{formatCost(c.cost_month, c.currency)}</td>
