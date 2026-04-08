@@ -40,6 +40,7 @@ export default function CircuitsPage() {
   const [technology, setTechnology] = useState('')
   const [country, setCountry] = useState('')
   const [site, setSite] = useState('')
+  const [showFilterPanel, setShowFilterPanel] = useState(false)
 
   useEffect(() => { fetchCircuits() }, [search, isp, usage, technology, country, site])
 
@@ -106,50 +107,109 @@ export default function CircuitsPage() {
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '12px', marginBottom: '20px' }}>
         {[
-          { label: 'Total circuits', value: circuits.length, color: '#1a2744' },
-          { label: 'Primary / Main', value: mainCount, color: '#166534' },
-          { label: 'Backup', value: backupCount, color: '#075985' },
+          { label: 'Total circuits', value: circuits.length, color: '#1a2744', bg: '#f0f4f8', border: '#c7d8e8', href: '/circuits', icon: <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.2"><path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round"/><circle cx="8" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="10" cy="18" r="2"/></svg> },
+          { label: 'Primary / Main', value: mainCount, color: '#166534', bg: '#dcfce7', border: '#86efac', href: '/circuits?usage=Main', icon: <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> },
+          { label: 'Backup', value: backupCount, color: '#075985', bg: '#e0f2fe', border: '#7dd3fc', href: '/circuits?usage=Backup', icon: <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> },
         ].map(s => (
-          <div key={s.label} style={{ background: 'white', borderRadius: '8px', border: '1px solid #e5e7eb', padding: '14px 16px' }}>
-            <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.label}</div>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: s.color }}>{s.value}</div>
-          </div>
+          <a key={s.label} href={s.href} style={{ textDecoration: 'none' }}>
+            <div style={{ background: s.bg, borderRadius: '8px', border: `1px solid ${s.border}`, padding: '16px', cursor: 'pointer', position: 'relative', overflow: 'hidden', transition: 'transform 0.1s, box-shadow 0.1s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}>
+              <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: s.color }}>{s.icon}</div>
+              <div style={{ fontSize: '11px', color: s.color, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: '600', opacity: 0.8 }}>{s.label}</div>
+              <div style={{ fontSize: '24px', fontWeight: '700', color: s.color }}>{s.value}</div>
+              <div style={{ fontSize: '11px', color: s.color, opacity: 0.6, marginTop: '4px' }}>View all →</div>
+            </div>
+          </a>
         ))}
       </div>
 
-      {/* Filters */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
-        <input style={{ padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '7px', fontSize: '14px', background: 'white', outline: 'none', minWidth: '200px', flex: 1, maxWidth: '280px' }}
-          placeholder="Search circuit ID, ISP, subnet..."
+      {/* Search + Filter bar */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
+        <input className="input" style={{ flex: '1', maxWidth: '400px' }} placeholder="Search circuit ID, ISP, subnet..."
           value={search} onChange={e => setSearch(e.target.value)} />
-        <select style={selectStyle} value={country} onChange={e => { setCountry(e.target.value); setSite('') }}>
-          <option value="">All countries</option>
-          {countries.map(c => <option key={c}>{c}</option>)}
-        </select>
-        <select style={selectStyle} value={site} onChange={e => setSite(e.target.value)}>
-          <option value="">All sites</option>
-          {sites.filter(s => !country || circuits.find(c => c.site === s)?.country === country).map(s => <option key={s}>{s}</option>)}
-        </select>
-        <select style={selectStyle} value={isp} onChange={e => setIsp(e.target.value)}>
-          <option value="">All ISPs</option>
-          {isps.map(i => <option key={i}>{i}</option>)}
-        </select>
-        <select style={selectStyle} value={usage} onChange={e => setUsage(e.target.value)}>
-          <option value="">All usage</option>
-          <option>Primary Internet</option>
-          <option>Backup Internet</option>
-          <option>MPLS Primary</option>
-          <option>MPLS Backup</option>
-          <option>Main</option>
-          <option>Backup</option>
-        </select>
-        <select style={selectStyle} value={technology} onChange={e => setTechnology(e.target.value)}>
-          <option value="">All technology</option>
-          {technologies.map(t => <option key={t}>{t}</option>)}
-        </select>
-        {(search || isp || usage || technology || country || site) && (
-          <button style={{ padding: '8px 14px', background: 'white', border: '1px solid #d1d5db', borderRadius: '7px', fontSize: '13px', cursor: 'pointer' }}
-            onClick={() => { setSearch(''); setIsp(''); setUsage(''); setTechnology(''); setCountry(''); setSite('') }}>Clear</button>
+        <button onClick={() => setShowFilterPanel(f => !f)}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', background: showFilterPanel || !!(isp||usage||technology||country||site) ? '#1a2744' : 'white', color: showFilterPanel || !!(isp||usage||technology||country||site) ? 'white' : '#374151', border: '1px solid ' + (showFilterPanel || !!(isp||usage||technology||country||site) ? '#1a2744' : '#e5e7eb'), borderRadius: '7px', cursor: 'pointer', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap' as const }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+          Filters {!!(isp||usage||technology||country||site) && `(${[isp,usage,technology,country,site].filter(Boolean).length})`}
+        </button>
+        {!!(search||isp||usage||technology||country||site) && (
+          <button onClick={() => { setSearch(''); setIsp(''); setUsage(''); setTechnology(''); setCountry(''); setSite('') }}
+            style={{ fontSize: '12px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', whiteSpace: 'nowrap' as const }}>
+            Clear all
+          </button>
+        )}
+      </div>
+
+      {/* Filter panel */}
+      {showFilterPanel && (
+        <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '16px', marginBottom: '12px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '5px' }}>Country</div>
+            <select className="select" style={{ width: '100%' }} value={country} onChange={e => { setCountry(e.target.value); setSite('') }}>
+              <option value="">All countries</option>
+              {countries.map(c => <option key={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '5px' }}>Site</div>
+            <select className="select" style={{ width: '100%' }} value={site} onChange={e => setSite(e.target.value)}>
+              <option value="">All sites</option>
+              {sites.filter(s => !country || circuits.find(c => c.site === s)?.country === country).map(s => <option key={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '5px' }}>ISP</div>
+            <select className="select" style={{ width: '100%' }} value={isp} onChange={e => setIsp(e.target.value)}>
+              <option value="">All ISPs</option>
+              {isps.map(i => <option key={i}>{i}</option>)}
+            </select>
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '5px' }}>Usage</div>
+            <select className="select" style={{ width: '100%' }} value={usage} onChange={e => setUsage(e.target.value)}>
+              <option value="">All usage</option>
+              <option>Primary Internet</option>
+              <option>Backup Internet</option>
+              <option>MPLS Primary</option>
+              <option>MPLS Backup</option>
+              <option>Main</option>
+              <option>Backup</option>
+            </select>
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '5px' }}>Technology</div>
+            <select className="select" style={{ width: '100%' }} value={technology} onChange={e => setTechnology(e.target.value)}>
+              <option value="">All technology</option>
+              {technologies.map(t => <option key={t}>{t}</option>)}
+            </select>
+          </div>
+        </div>
+      )}
+
+      {/* Active filter pills */}
+      {!!(isp||usage||technology||country||site) && (
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' as const, marginBottom: '12px' }}>
+          {country && <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#e0f2fe', color: '#075985', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '500' }}>Country: {country}<button onClick={() => { setCountry(''); setSite('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#075985', fontSize: '14px', lineHeight: '1', padding: '0 0 0 2px' }}>×</button></span>}
+          {site && <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#e0f2fe', color: '#075985', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '500' }}>Site: {site}<button onClick={() => setSite('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#075985', fontSize: '14px', lineHeight: '1', padding: '0 0 0 2px' }}>×</button></span>}
+          {isp && <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#e0f2fe', color: '#075985', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '500' }}>ISP: {isp}<button onClick={() => setIsp('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#075985', fontSize: '14px', lineHeight: '1', padding: '0 0 0 2px' }}>×</button></span>}
+          {usage && <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#e0f2fe', color: '#075985', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '500' }}>Usage: {usage}<button onClick={() => setUsage('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#075985', fontSize: '14px', lineHeight: '1', padding: '0 0 0 2px' }}>×</button></span>}
+          {technology && <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#e0f2fe', color: '#075985', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '500' }}>Technology: {technology}<button onClick={() => setTechnology('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#075985', fontSize: '14px', lineHeight: '1', padding: '0 0 0 2px' }}>×</button></span>}
+        </div>
+      )}
+
+      {/* Toolbar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <span style={{ fontSize: '13px', color: '#6b7280' }}>
+          {loading ? 'Loading...' : `${circuits.length.toLocaleString()} circuits`}
+        </span>
+        {isAdmin && (
+          <Link href="/circuits/new">
+            <button style={{ padding: '7px 14px', background: '#C8102E', color: 'white', border: 'none', borderRadius: '7px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '500' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
+              Add circuit
+            </button>
+          </Link>
         )}
       </div>
 
