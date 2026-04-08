@@ -444,15 +444,21 @@ export default function DevicesPage() {
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
         {[
-          { label: 'Total devices', value: stats.total.toLocaleString(), color: '#1a2744', bg: '#f0f4f8', border: '#c7d8e8' },
-          { label: 'Active', value: stats.active.toLocaleString(), color: '#166534', bg: '#dcfce7', border: '#86efac' },
-          { label: 'EOL / EOS', value: stats.eol.toLocaleString(), color: '#991b1b', bg: '#fee2e2', border: '#fca5a5' },
-          { label: 'Decommed', value: stats.decommed.toLocaleString(), color: '#92400e', bg: '#fef3c7', border: '#fcd34d' },
+          { label: 'Total devices', value: stats.total.toLocaleString(), color: '#1a2744', bg: '#f0f4f8', border: '#c7d8e8', href: '/devices', icon: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> },
+          { label: 'Active', value: stats.active.toLocaleString(), color: '#166534', bg: '#dcfce7', border: '#86efac', href: '/devices?status=Active', icon: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> },
+          { label: 'EOL / EOS', value: stats.eol.toLocaleString(), color: '#991b1b', bg: '#fee2e2', border: '#fca5a5', href: '/devices?lifecycle=EOL+%2F+EOS', icon: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.2"><path d="M12 2L2 20h20L12 2z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> },
+          { label: 'Decommed', value: stats.decommed.toLocaleString(), color: '#92400e', bg: '#fef3c7', border: '#fcd34d', href: '/devices?status=Decommed', icon: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> },
         ].map(s => (
-          <div key={s.label} style={{ background: s.bg, borderRadius: '8px', border: `1px solid ${s.border}`, padding: '14px 16px' }}>
-            <div style={{ fontSize: '12px', color: s.color, marginBottom: '4px', fontWeight: '500', opacity: 0.8 }}>{s.label}</div>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: s.color }}>{s.value}</div>
-          </div>
+          <Link key={s.label} href={s.href} style={{ textDecoration: 'none' }}>
+            <div style={{ background: s.bg, borderRadius: '8px', border: `1px solid ${s.border}`, padding: '16px', cursor: 'pointer', position: 'relative', overflow: 'hidden', transition: 'transform 0.1s, box-shadow 0.1s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}>
+              <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: s.color }}>{s.icon}</div>
+              <div style={{ fontSize: '12px', color: s.color, marginBottom: '4px', fontWeight: '500', opacity: 0.8 }}>{s.label}</div>
+              <div style={{ fontSize: '26px', fontWeight: '700', color: s.color }}>{s.value}</div>
+              <div style={{ fontSize: '11px', color: s.color, opacity: 0.6, marginTop: '4px' }}>View all →</div>
+            </div>
+          </Link>
         ))}
       </div>
 
