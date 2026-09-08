@@ -69,6 +69,20 @@ export default function CircuitsPage() {
     fetchCircuits()
   }
 
+  // Export whatever is currently on screen. The server re-applies these same
+  // filters (and the site scoping) rather than trusting a client-side row list,
+  // so the file always matches the query, not the paginated view.
+  function exportCSV() {
+    const params = new URLSearchParams()
+    if (search)     params.set('search', search)
+    if (isp)        params.set('isp', isp)
+    if (usage)      params.set('usage', usage)
+    if (technology) params.set('technology', technology)
+    if (country)    params.set('country', country)
+    if (site)       params.set('site', site)
+    window.location.href = `/api/circuits/export?${params.toString()}`
+  }
+
   const isps = [...new Set(circuits.map(c => c.isp).filter(Boolean))].sort()
   const technologies = [...new Set(circuits.map(c => c.technology).filter(t => t && t !== 'nan'))].sort()
   const countries = [...new Set(circuits.map(c => c.country).filter(Boolean))].sort()
@@ -132,6 +146,14 @@ export default function CircuitsPage() {
           style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', background: showFilterPanel || !!(isp||usage||technology||country||site) ? '#1a2744' : 'var(--bg-card)', color: showFilterPanel || !!(isp||usage||technology||country||site) ? 'white' : 'var(--text-secondary)', border: '1px solid ' + (showFilterPanel || !!(isp||usage||technology||country||site) ? '#1a2744' : 'var(--border)'), borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontSize: 'var(--text-base)', fontWeight: '500', whiteSpace: 'nowrap' as const }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
           Filters {!!(isp||usage||technology||country||site) && `(${[isp,usage,technology,country,site].filter(Boolean).length})`}
+        </button>
+        <button onClick={exportCSV}
+          title={!!(search||isp||usage||technology||country||site) ? 'Export the filtered circuits to CSV' : 'Export all circuits to CSV'}
+          style={{ padding: '7px 10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: 'var(--text-base)', color: 'var(--text-secondary)', whiteSpace: 'nowrap' as const }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-subtle)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'var(--bg-card)')}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Export
         </button>
         {!!(search||isp||usage||technology||country||site) && (
           <button onClick={() => { setSearch(''); setIsp(''); setUsage(''); setTechnology(''); setCountry(''); setSite('') }}

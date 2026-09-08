@@ -48,6 +48,7 @@ GET /api/circuits/[id] [auth] [db] — get circuit by id, site-scoped
 PUT /api/circuits/[id] [auth] [db] — update circuit (admin+)
 DELETE /api/circuits/[id] [auth] [db] — delete circuit (admin+)
 GET /api/circuits [auth] [db] — list/filter circuits, site-scoped
+GET /api/circuits/export [auth] [db] — CSV export of circuits, same filters AND same site scoping as the list route (keep the two in lockstep)
 POST /api/circuits [auth] [db] — create circuit
 
 ## compliance

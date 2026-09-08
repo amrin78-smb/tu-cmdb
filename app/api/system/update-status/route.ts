@@ -75,6 +75,11 @@ async function remoteVersion(repoRoot: string): Promise<string> {
 // version, add a matching entry with 3-5 bullets. There is no CHANGELOG.md —
 // release notes live here only.
 const releaseNotes: Record<string, string[]> = {
+  '1.37.0': [
+    'Added an Export button to the WAN Circuits page. It produces a spreadsheet file of the circuit inventory that opens directly in Excel, with 22 columns including site, country, ISP, product, speeds, public subnet, currency, monthly cost, contract term and comments.',
+    'The export follows whatever you have filtered on screen. Searching or filtering by ISP, usage, technology, country or site narrows the file to match; with nothing filtered you get all circuits.',
+    'Users restricted to particular sites receive only their own sites in the export, exactly as they do in the on-screen list.',
+  ],
   '1.36.1': [
     "Fixed: the EOL Intelligence page sat on Loading for around ten seconds the first time it was opened after any restart or update. On starting up it was re-seeding the bundled catalog of roughly 7,900 models, issuing several database statements for each one - tens of thousands in total - before it would answer anything. That work is a first-install step and almost never changes anything on an established system, so it is now skipped unless the bundled catalog has actually changed.",
     "Fixed: the Quick EOL lookup returned unrelated hardware. Searching 2900 also matched HPE switches, because it was matching against alternate model names and one of those contains 12900. The lookup now matches on vendor and model only.",
