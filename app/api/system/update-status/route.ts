@@ -75,6 +75,12 @@ async function remoteVersion(repoRoot: string): Promise<string> {
 // version, add a matching entry with 3-5 bullets. There is no CHANGELOG.md —
 // release notes live here only.
 const releaseNotes: Record<string, string[]> = {
+  '1.38.0': [
+    'The Circuits export now offers Excel (.xlsx) as well as CSV. The Export button opens a short menu to choose between them.',
+    'In the Excel file the monthly cost is a real number rather than text, so totals and filters work on it directly, and the columns are sized to their contents. There is also no question of commas inside addresses or comments splitting across cells, which is a genuine consideration here - most circuits have a comma somewhere in those fields.',
+    'CSV is unchanged and remains available for Power BI and scripts.',
+    'Both formats follow whatever is filtered on screen, and both restrict users to their assigned sites exactly as the on-screen list does.',
+  ],
   '1.37.0': [
     'Added an Export button to the WAN Circuits page. It produces a spreadsheet file of the circuit inventory that opens directly in Excel, with 22 columns including site, country, ISP, product, speeds, public subnet, currency, monthly cost, contract term and comments.',
     'The export follows whatever you have filtered on screen. Searching or filtering by ISP, usage, technology, country or site narrows the file to match; with nothing filtered you get all circuits.',

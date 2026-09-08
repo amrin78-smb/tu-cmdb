@@ -2,15 +2,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
+import * as XLSX from 'xlsx'
 
 /**
- * GET /api/circuits/export — CSV of the circuit inventory, honouring the same
- * filters the Circuits page has applied.
+ * GET /api/circuits/export — the circuit inventory, honouring the same filters
+ * the Circuits page has applied. Two formats via ?format= : csv (default) and
+ * xlsx.
  *
- * Mirrors /api/export (devices) in shape: session-gated, friendly column names,
- * text/csv with a dated filename. CSV rather than .xlsx because that is the
- * suite's existing export format and Excel opens it directly — no dependency,
- * and it stays importable by Power BI like the devices export.
+ * CSV mirrors /api/export (devices): session-gated, friendly column names, dated
+ * filename, Power BI-importable.
+ *
+ * XLSX uses the SheetJS 'xlsx' package that is ALREADY a direct dependency here
+ * (it backs the device and site importers), so this adds no new package. See
+ * app/api/sites/import/template/route.ts for the same write-a-workbook pattern,
+ * including why the response body must be a Uint8Array rather than a Buffer.
+ *
+ * What xlsx buys over csv: Cost/Month arrives as a real NUMBER so Excel can SUM
+ * and filter it, column widths are set, and there is no comma/quote/encoding
+ * negotiation at all — which matters here because 68 of the 123 live rows carry
+ * commas in their address or comment.
  *
  * SITE SCOPING IS LOAD-BEARING. The filter block below is deliberately identical
  * to GET /api/circuits: a `site_admin` sees only their assigned sites, and one
@@ -32,6 +42,7 @@ export async function GET(req: NextRequest) {
   const technology = searchParams.get('technology') || ''
   const country    = searchParams.get('country') || ''
   const site       = searchParams.get('site') || ''
+  const format     = searchParams.get('format') === 'xlsx' ? 'xlsx' : 'csv'
 
   const conditions: string[] = []
   const params: unknown[] = []
@@ -42,7 +53,7 @@ export async function GET(req: NextRequest) {
   } else if (sessionUser.role === 'site_admin') {
     // No assigned sites → export an empty (header-only) file rather than 403,
     // so the button behaves consistently instead of appearing broken.
-    return csvResponse([])
+    return respond([], format)
   }
 
   if (search)     { conditions.push(`(c.circuit_id ILIKE $${p} OR c.isp ILIKE $${p} OR c.site_name_raw ILIKE $${p} OR s.name ILIKE $${p} OR c.public_subnet ILIKE $${p})`); params.push(`%${search}%`); p++ }
@@ -68,7 +79,7 @@ export async function GET(req: NextRequest) {
     ORDER BY co.name, s.name, c.usage
   `, params)
 
-  return csvResponse(res.rows)
+  return respond(res.rows, format)
 }
 
 // Column order and headers are the export contract — a spreadsheet someone has
@@ -98,6 +109,56 @@ const COLUMNS: [string, string][] = [
   ['pingable',         'Pingable'],
   ['comment',          'Comment'],
 ]
+
+function respond(rows: Record<string, unknown>[], format: 'csv' | 'xlsx') {
+  return format === 'xlsx' ? xlsxResponse(rows) : csvResponse(rows)
+}
+
+// Written as NUMBERS in xlsx rather than text, so Excel can total and filter
+// them. pg returns numeric as a string, so this must be explicit — left as text
+// the cells look identical but SUM silently returns 0.
+const NUMERIC_COLS = new Set(['cost_month'])
+
+function xlsxResponse(rows: Record<string, unknown>[]) {
+  const header = COLUMNS.map(([, h]) => h)
+  const body = rows.map(row =>
+    COLUMNS.map(([col]) => {
+      const v = row[col]
+      if (v === null || v === undefined || v === '') return ''
+      if (NUMERIC_COLS.has(col)) {
+        const n = Number(v)
+        return Number.isFinite(n) ? n : String(v)
+      }
+      return String(v)
+    }),
+  )
+
+  const ws = XLSX.utils.aoa_to_sheet([header, ...body])
+  // Width from the header and the widest value, capped so one long comment does
+  // not push the sheet to an unusable width.
+  ws['!cols'] = COLUMNS.map((_c, i) => {
+    const widest = body.reduce((m, r) => Math.max(m, String(r[i] ?? '').length), 0)
+    return { wch: Math.min(Math.max(header[i].length + 2, widest + 2), 48) }
+  })
+  // NOTE: no frozen header row. SheetJS's community build silently ignores
+  // ws['!freeze'] — verified against 0.18.5 by writing a sheet and checking the
+  // emitted XML for a <pane> element (absent; <cols> is present). Setting it
+  // anyway would read as a working feature that does nothing.
+
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Circuits')
+
+  const out = new Uint8Array(XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer)
+  const dateStr = new Date().toISOString().split('T')[0]
+  return new NextResponse(out, {
+    headers: {
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': `attachment; filename="NetVault_Circuits_${dateStr}.xlsx"`,
+      'Content-Length': String(out.length),
+      'Cache-Control': 'no-store',
+    },
+  })
+}
 
 function csvResponse(rows: Record<string, unknown>[]) {
   const esc = (v: unknown) => {
